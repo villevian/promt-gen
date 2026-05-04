@@ -21,10 +21,11 @@ const SECTION_BORDER = {
     after: "var(--pb-after)",
 };
 
-const buildFullPrompt = (variation, prep) => {
+const buildFullPrompt = (variation, prep, roleContext) => {
     const parts = [];
     if (prep) parts.push(`=== STEP 1 — PREPARATION PROMPT (paste into ChatGPT/Claude/Gemini) ===\n${prep.trim()}\n`);
     parts.push(`=== STEP 2 — LEARNING PROMPT ===`);
+    if (roleContext) parts.push(`--- ROLE & CONTEXT (for the AI) ---\n${roleContext.trim()}`);
     parts.push(`--- BEFORE ---\n${variation.before.trim()}`);
     parts.push(`--- DURING ---\n${variation.during.trim()}`);
     parts.push(`--- AFTER ---\n${variation.after.trim()}`);
@@ -117,6 +118,28 @@ const HowToUseBlock = ({ activityId, lang, testIdPrefix }) => {
     );
 };
 
+const RoleContextBlock = ({ text, lang, testIdPrefix }) => {
+    const [copied, copy] = useCopier();
+    return (
+        <section className="pb-glass p-5 md:p-6 relative" data-testid={`${testIdPrefix}-role-context`}
+            style={{ borderLeft: "4px solid var(--pb-accent)" }}>
+            <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                    <span className="pb-mono text-[10px] uppercase tracking-widest px-2 py-1 border"
+                        style={{ background: "rgba(55, 112, 112, 0.12)", color: "var(--pb-accent)", borderColor: "var(--pb-accent)" }}>
+                        {t(lang, "role_badge")}
+                    </span>
+                    <span className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)]">
+                        {t(lang, "role_sub")}
+                    </span>
+                </div>
+                <CopyBtn onClick={() => copy(text.trim())} copied={copied} lang={lang} testId={`${testIdPrefix}-copy-role`} />
+            </div>
+            <div className="pb-prompt-block" style={{ background: "rgba(55, 112, 112, 0.05)" }}>{text.trim()}</div>
+        </section>
+    );
+};
+
 export const PromptCard = ({ prompt, lang, index }) => {
     const [activeVariation, setActiveVariation] = useState(0);
     const [returns, setReturns] = useState({ tomorrow: false, day_3: false, day_7: false });
@@ -130,7 +153,7 @@ export const PromptCard = ({ prompt, lang, index }) => {
     const toggleReturn = (k) => setReturns((s) => ({ ...s, [k]: !s[k] }));
 
     const handleShare = async () => {
-        const text = `AI Prompt Bank — ${prompt.activity_label}\n\n${buildFullPrompt(variation, prompt.preparation_prompt)}`;
+        const text = `AI Prompt Bank — ${prompt.activity_label}\n\n${buildFullPrompt(variation, prompt.preparation_prompt, prompt.role_context)}`;
         if (navigator.share) {
             try {
                 await navigator.share({ title: `AI Prompt Bank — ${prompt.activity_label}`, text });
@@ -186,6 +209,11 @@ export const PromptCard = ({ prompt, lang, index }) => {
                 </>
             )}
 
+            {/* Role & context for the AI */}
+            {prompt.role_context && (
+                <RoleContextBlock text={prompt.role_context} lang={lang} testIdPrefix={testIdPrefix} />
+            )}
+
             {/* Variation tabs */}
             <div className="flex gap-1 -mb-3" data-testid={`${testIdPrefix}-variation-tabs`}>
                 {prompt.variations.map((v, i) => (
@@ -231,7 +259,7 @@ export const PromptCard = ({ prompt, lang, index }) => {
 
             <div className="flex justify-end print:hidden">
                 <button
-                    onClick={() => copyFull(buildFullPrompt(variation, prompt.preparation_prompt))}
+                    onClick={() => copyFull(buildFullPrompt(variation, prompt.preparation_prompt, prompt.role_context))}
                     className="pb-button-primary flex items-center gap-2"
                     data-testid={`${testIdPrefix}-copy-full`}
                 >
