@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import "@/App.css";
 import axios from "axios";
 import { Toaster, toast } from "sonner";
+import { Coffee } from "lucide-react";
 
 import { Header } from "./components/Header";
 import { ProgressIndicator } from "./components/ProgressIndicator";
@@ -320,10 +321,32 @@ function App() {
                 />
             )}
 
-            <footer className="border-t border-[var(--pb-border)] pb-glass mt-16">
-                <div className="max-w-6xl mx-auto px-6 md:px-12 py-8 flex flex-col md:flex-row gap-3 justify-between items-start md:items-center pb-mono text-[11px] text-[var(--pb-text-muted)]">
-                    <div>{t(lang, "byline")}</div>
-                    <div>{t(lang, "brand")} · {new Date().getFullYear()} · Powered by Claude Haiku 4.5</div>
+            <footer className="border-t border-[var(--pb-border)] pb-glass mt-16" data-testid="app-footer">
+                <div className="max-w-6xl mx-auto px-6 md:px-12 py-10 flex flex-col gap-8">
+                    <div className="pb-glass-strong p-5 md:p-6 flex flex-col md:flex-row md:items-center gap-5 md:gap-8" data-testid="donate-block">
+                        <div className="flex-1">
+                            <div className="pb-mono text-[10px] uppercase tracking-[0.18em] text-[var(--pb-text-muted)] mb-2">
+                                ☕ Support
+                            </div>
+                            <p className="pb-sans text-sm md:text-[15px] leading-relaxed text-[var(--pb-text)] max-w-2xl">
+                                {t(lang, "donate_title")}
+                            </p>
+                        </div>
+                        <a
+                            href="https://donate.stripe.com/7sY3cv7sFgJU9Zn0Ns7kc01"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pb-button-primary flex items-center gap-2 !py-3 !px-5 whitespace-nowrap self-start md:self-auto"
+                            data-testid="donate-btn"
+                        >
+                            <Coffee size={16} />
+                            {t(lang, "donate_cta")}
+                        </a>
+                    </div>
+                    <div className="flex flex-col md:flex-row gap-3 justify-between items-start md:items-center pb-mono text-[11px] text-[var(--pb-text-muted)]">
+                        <div>{t(lang, "byline")}</div>
+                        <div>{t(lang, "brand")} · {new Date().getFullYear()} · Powered by Claude Haiku 4.5</div>
+                    </div>
                 </div>
             </footer>
         </div>

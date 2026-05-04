@@ -1,7 +1,9 @@
 export const translations = {
     en: {
         brand: "AI Prompt Bank",
-        byline: "by Valentyna Gordiienko · Sr. Learning Experience Designer · DLI",
+        byline: "by Valentyna Hordiienko · Sr. Learning Experience Designer",
+        donate_title: "All materials are free. If you found this helpful, a small tip is always appreciated — no pressure.",
+        donate_cta: "Buy me a coffee",
         intro_kicker: "A pedagogical instrument",
         intro_h1: "Stop asking the AI \"teach me English.\"",
         intro_lede: "A six-step instrument that writes the prompt for you — methodologically grounded, level-aware, and ready to paste into NotebookLM, ChatGPT, Gemini or Claude.",
@@ -127,7 +129,9 @@ export const translations = {
     },
     uk: {
         brand: "AI Prompt Bank",
-        byline: "Валентина Гордієнко · Senior Learning Experience Designer · DLI",
+        byline: "Валентина Гордієнко · Senior Learning Experience Designer",
+        donate_title: "Всі матеріали безкоштовні. Якщо було корисно — можеш підтримати символічно, скільки вважаєш за потрібне ☕",
+        donate_cta: "Підтримати на каву",
         intro_kicker: "Педагогічний інструмент",
         intro_h1: "Перестань писати AI «teach me English».",
         intro_lede: "Шість кроків — і інструмент сам напише промт за тебе. Методологічно обґрунтований, з урахуванням рівня, готовий вставити в NotebookLM, ChatGPT, Gemini або Claude.",
