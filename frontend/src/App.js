@@ -36,48 +36,25 @@ const INITIAL_STATE = {
 
 function Intro({ lang, onStart }) {
     return (
-        <div className="max-w-6xl mx-auto px-6 md:px-12 py-16 md:py-28 pb-step-enter" data-testid="intro-view">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-10 items-end">
-                <div className="md:col-span-8">
-                    <div className="pb-eyebrow mb-6">{t(lang, "intro_kicker")}</div>
-                    <h1 className="pb-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.05] mb-6 text-[var(--pb-text)]">
-                        {t(lang, "intro_h1")}
-                    </h1>
-                    <p className="text-base md:text-lg text-[var(--pb-text-secondary)] leading-relaxed max-w-2xl mb-10">
-                        {t(lang, "intro_lede")}
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
-                        <button
-                            onClick={onStart}
-                            className="pb-button-primary flex items-center gap-3"
-                            data-testid="intro-start-btn"
-                        >
-                            {t(lang, "intro_cta")} →
-                        </button>
-                        <span className="pb-mono text-xs text-[var(--pb-text-muted)] tracking-wider">
-                            {t(lang, "intro_meta")}
-                        </span>
-                    </div>
-                </div>
-                <div className="md:col-span-4">
-                    <div className="pb-glass p-6">
-                        <div className="pb-mono text-xs uppercase tracking-[0.2em] text-[var(--pb-text-muted)] mb-4">
-                            Methodology
-                        </div>
-                        <ul className="space-y-3 pb-mono text-[11px] text-[var(--pb-text-secondary)]">
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Krashen</span><span>Input i+1</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Lewis</span><span>Lexical chunks</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Long, Ellis</span><span>Focus on Form</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Willis</span><span>CLT / TBLT</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Swain</span><span>Output</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Ebbinghaus</span><span>Spaced repetition</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Hattie</span><span>Self-rating</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Wiggins</span><span>Success criteria</span></li>
-                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Bjork</span><span>Desirable difficulty</span></li>
-                            <li className="flex justify-between"><span>Ausubel</span><span>Schema activation</span></li>
-                        </ul>
-                    </div>
-                </div>
+        <div className="max-w-4xl mx-auto px-6 md:px-12 py-16 md:py-28 pb-step-enter" data-testid="intro-view">
+            <div className="pb-eyebrow mb-6">{t(lang, "intro_kicker")}</div>
+            <h1 className="pb-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl tracking-tight leading-[1.05] mb-6 text-[var(--pb-text)]">
+                {t(lang, "intro_h1")}
+            </h1>
+            <p className="text-base md:text-lg text-[var(--pb-text-secondary)] leading-relaxed max-w-2xl mb-10">
+                {t(lang, "intro_lede")}
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center">
+                <button
+                    onClick={onStart}
+                    className="pb-button-primary flex items-center gap-3"
+                    data-testid="intro-start-btn"
+                >
+                    {t(lang, "intro_cta")} →
+                </button>
+                <span className="pb-mono text-xs text-[var(--pb-text-muted)] tracking-wider">
+                    {t(lang, "intro_meta")}
+                </span>
             </div>
         </div>
     );
