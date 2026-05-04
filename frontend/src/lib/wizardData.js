@@ -125,20 +125,135 @@ export const BLOOM_LABELS = {
     },
 };
 
+// Each activity has:
+//   what — what it actually is (the AI-tool feature)
+//   how  — how it serves English learning specifically
 export const ACTIVITIES = [
-    { id: "audio_retelling", glyph: "♪", labelEn: "Audio retelling", labelUk: "Аудіо переказ", tool: "notebooklm" },
-    { id: "video_retelling", glyph: "▷", labelEn: "Video retelling", labelUk: "Відео переказ", tool: "notebooklm" },
-    { id: "mind_map",        glyph: "◯", labelEn: "Mind map",        labelUk: "Mind map",      tool: "notebooklm" },
-    { id: "flashcards",      glyph: "▭", labelEn: "Flashcards",      labelUk: "Flashcards",    tool: "notebooklm" },
-    { id: "test",            glyph: "?", labelEn: "Test / Quiz",     labelUk: "Тест",           tool: "notebooklm" },
-    { id: "infographic",     glyph: "▤", labelEn: "Infographic",     labelUk: "Інфографіка",   tool: "notebooklm" },
-    { id: "study_guide",     glyph: "≡", labelEn: "Study guide",     labelUk: "Study guide",   tool: "notebooklm" },
-    { id: "presentation",    glyph: "▥", labelEn: "Presentation",    labelUk: "Презентація",   tool: "notebooklm" },
-    { id: "roleplay",        glyph: "▲", labelEn: "Roleplay / dialogue", labelUk: "Роуплей / діалог", tool: "chatgpt_gemini" },
-    { id: "speak_voice",     glyph: "✦", labelEn: "Speak / voice chat", labelUk: "Голосовий чат",     tool: "chatgpt_gemini" },
-    { id: "write_feedback",  glyph: "✎", labelEn: "Write + feedback",   labelUk: "Письмо + фідбек",  tool: "chatgpt_gemini" },
-    { id: "claude_chat",     glyph: "✶", labelEn: "Claude — tasks & explanations", labelUk: "Claude — завдання й пояснення", tool: "claude" },
+    {
+        id: "audio_retelling", glyph: "♪", tool: "notebooklm",
+        labelEn: "Audio Overview (podcast)", labelUk: "Audio Overview (подкаст)",
+        whatEn: "NotebookLM Studio generates an interactive AI podcast on your sources — you can even join live and ask questions.",
+        whatUk: "NotebookLM Studio робить інтерактивний AI-подкаст за твоїми джерелами — можна підключитись наживо й питати.",
+        howEn: "Listen with subtitles off, then retell using your own phrases. Strongest for listening + speaking.",
+        howUk: "Слухай без субтитрів, потім перекажи своїми словами. Найкраще для аудіювання + говоріння.",
+    },
+    {
+        id: "video_retelling", glyph: "▷", tool: "notebooklm",
+        labelEn: "Video Overview (visual explainer)", labelUk: "Video Overview (відео-пояснення)",
+        whatEn: "A narrated AI video that explains the topic with diagrams and on-screen text.",
+        whatUk: "AI-відео з діаграмами та підписами, яке візуально пояснює тему.",
+        howEn: "First watch without subtitles for gist; second pass with subtitles to notice phrases. Then explain back.",
+        howUk: "Спершу без субтитрів — для суті; потім із субтитрами — помічаєш фрази. Потім поясни тему своїми словами.",
+    },
+    {
+        id: "mind_map", glyph: "◯", tool: "notebooklm",
+        labelEn: "Mind Map", labelUk: "Mind Map",
+        whatEn: "Clickable concept map: central topic + branches with connected ideas, vocabulary, and sub-questions.",
+        whatUk: "Клікабельна мапа концепту: центральна тема + гілки зі звʼязаними ідеями, лексикою, під-питаннями.",
+        howEn: "Organise vocabulary by meaning groups; turn each branch into a 60-second speaking prompt.",
+        howUk: "Групуй лексику за значенням; перетвори кожну гілку на 60-секундну тему для говоріння.",
+    },
+    {
+        id: "flashcards", glyph: "▭", tool: "notebooklm",
+        labelEn: "Flashcards (term · translation · example)", labelUk: "Flashcards (слово · переклад · приклад)",
+        whatEn: "Auto-generated cards. Pick the format: term ↔ translation, term ↔ definition, or term ↔ example sentence with a gap.",
+        whatUk: "Авто-картки. Обери формат: слово ↔ переклад, слово ↔ означення, або речення з пропуском.",
+        howEn: "Active recall — front in your L1, back in English (or reverse). Best for vocabulary + collocations.",
+        howUk: "Активне пригадування — перед українською, зворот англійською (або навпаки). Топ для лексики + колокацій.",
+    },
+    {
+        id: "test", glyph: "?", tool: "notebooklm",
+        labelEn: "Quiz / Test", labelUk: "Тест / Quiz",
+        whatEn: "Auto-generated quiz — mix of multiple-choice and open questions tied to your sources.",
+        whatUk: "Авто-тест — мікс з вибором відповіді й відкритих питань на матеріалі твоїх джерел.",
+        howEn: "Take it after study with no notes (retrieval practice — Roediger). Identifies what hasn't stuck yet.",
+        howUk: "Пиши без нотаток (retrieval practice — Roediger). Покаже, що ще не закріпилось.",
+    },
+    {
+        id: "infographic", glyph: "▤", tool: "notebooklm",
+        labelEn: "Infographic", labelUk: "Інфографіка",
+        whatEn: "A single-page visual summary — vocabulary, structure, examples on one screen.",
+        whatUk: "Одна сторінка візуального підсумку — лексика, структура, приклади на одному екрані.",
+        howEn: "Pin to your desktop. Use as a 30-second 'before-the-meeting' refresher.",
+        howUk: "Закріпи на робочому столі. Юзай як 30-секундне нагадування перед зустріччю.",
+    },
+    {
+        id: "study_guide", glyph: "≡", tool: "notebooklm",
+        labelEn: "Study Guide", labelUk: "Study Guide",
+        whatEn: "Structured guide (Q&A or chapter format) — your personal textbook on the topic.",
+        whatUk: "Структурований посібник (Q&A або розділи) — твій персональний підручник з теми.",
+        howEn: "Read-through then close it and try to reproduce key phrases out loud.",
+        howUk: "Прочитай, закрий і спробуй вголос відтворити ключові фрази.",
+    },
+    {
+        id: "presentation", glyph: "▥", tool: "notebooklm",
+        labelEn: "Presentation", labelUk: "Презентація",
+        whatEn: "Slide deck explaining the topic — built from your sources.",
+        whatUk: "Слайд-презентація теми — за твоїми джерелами.",
+        howEn: "Present it aloud as if pitching to a colleague. Record yourself, then ask AI to grade tone & clarity.",
+        howUk: "Презентуй уголос, наче колезі. Запиши себе, попроси AI оцінити тон і ясність.",
+    },
+    {
+        id: "roleplay", glyph: "▲", tool: "chatgpt_gemini",
+        labelEn: "Roleplay / Dialogue", labelUk: "Роуплей / діалог",
+        whatEn: "AI plays one role (client, manager, customer), you play another. Real-life business scenarios.",
+        whatUk: "AI грає одну роль (клієнт, менеджер, замовник), ти — іншу. Реальні бізнес-сценарії.",
+        howEn: "Paste target phrases from NotebookLM so AI uses ONLY them. Best for Speaking + Business English.",
+        howUk: "Встав цільові фрази з NotebookLM, щоб AI вживав ТІЛЬКИ їх. Топ для Speaking + Business English.",
+    },
+    {
+        id: "speak_voice", glyph: "✦", tool: "chatgpt_gemini",
+        labelEn: "Voice chat (live)", labelUk: "Голосовий чат (наживо)",
+        whatEn: "Real-time voice conversation with ChatGPT Voice or Gemini Live — speak, AI replies in audio.",
+        whatUk: "Голосова розмова з ChatGPT Voice або Gemini Live — говориш, AI відповідає голосом.",
+        howEn: "Train pronunciation + fluency + live reaction. Ask AI to gently recast your errors.",
+        howUk: "Тренуй вимову + побіжність + живу реакцію. Попроси AI мʼяко переформульовувати помилки.",
+    },
+    {
+        id: "write_feedback", glyph: "✎", tool: "chatgpt_gemini",
+        labelEn: "Write + feedback", labelUk: "Письмо + фідбек",
+        whatEn: "Write a short text (email, paragraph, post) — AI gives line-by-line corrections + clean rewrite.",
+        whatUk: "Напиши короткий текст (лист, абзац, пост) — AI дає правки рядок-за-рядком + чисту переписану версію.",
+        howEn: "Best for emails, business writing, posts. Compare your version vs. clean rewrite — note 3 patterns.",
+        howUk: "Топ для листів, бізнес-письма, постів. Порівняй свій варіант з чистим — виділи 3 патерни.",
+    },
+    {
+        id: "claude_chat", glyph: "✶", tool: "claude",
+        labelEn: "Claude — tasks & explanations", labelUk: "Claude — завдання й пояснення",
+        whatEn: "Claude.ai chat — strong at nuanced grammar explanations, structured drills, and pedagogical scaffolding.",
+        whatUk: "Чат Claude.ai — сильний у нюансах граматики, структурованих вправах і педагогічному скаффолдингу.",
+        howEn: "Ask Claude to teach in steps, with examples + tests + answer keys. Great for grammar deep-dives.",
+        howUk: "Попроси Claude навчати поетапно — з прикладами, тестами й відповідями. Топ для глибокого розбору граматики.",
+    },
 ];
+
+// Student-voice problems for each Bloom stage — recognisable without knowing the taxonomy.
+export const BLOOM_SYMPTOMS = {
+    remember: {
+        en: "\"I haven't met this topic yet.\" · \"I want to see and hear what it looks like first.\"",
+        uk: "«ще не знайомий з темою» · «хочу спершу побачити й почути, як це звучить»",
+    },
+    understand: {
+        en: "\"I see the words but don't know when to use them.\" · \"I get the rule but the logic isn't clear.\"",
+        uk: "«бачу слова, але не знаю, коли їх вживати» · «правило знаю, але логіка незрозуміла»",
+    },
+    apply_controlled: {
+        en: "\"I can do it with prompts but freeze without a template.\" · \"I forget without support.\"",
+        uk: "«можу за шаблоном, але без нього губуся» · «без підказки забуваю»",
+    },
+    apply_free: {
+        en: "\"I know the words but I can't speak.\" · \"Need to move from theory to actual use.\"",
+        uk: "«знаю слова, але не можу говорити» · «треба перейти від теорії до практики»",
+    },
+    evaluate: {
+        en: "\"I keep forgetting.\" · \"I don't notice my own mistakes.\" · \"Something sounds off but I can't tell what.\"",
+        uk: "«постійно забуваю» · «не помічаю своїх помилок» · «щось звучить не так, але не знаю що»",
+    },
+    create: {
+        en: "\"I want to use it in a real meeting/email tomorrow.\" · \"Ready for the real situation.\"",
+        uk: "«хочу використати в реальній зустрічі/листі завтра» · «готовий до справжньої ситуації»",
+    },
+};
 
 // Recommendations: aspect+stage -> array of activity ids highlighted in green.
 export const RECOMMENDATIONS = {
