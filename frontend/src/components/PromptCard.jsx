@@ -142,15 +142,12 @@ const RoleContextBlock = ({ text, lang, testIdPrefix }) => {
 
 export const PromptCard = ({ prompt, lang, index }) => {
     const [activeVariation, setActiveVariation] = useState(0);
-    const [returns, setReturns] = useState({ tomorrow: false, day_3: false, day_7: false });
     const [fullCopied, copyFull] = useCopier();
     const [shareCopied, copyShare] = useCopier();
 
     const variation = prompt.variations[activeVariation];
     const tool = TOOL_COLOR[prompt.tool];
     const testIdPrefix = `prompt-${index}`;
-
-    const toggleReturn = (k) => setReturns((s) => ({ ...s, [k]: !s[k] }));
 
     const handleShare = async () => {
         const text = `AI Prompt Bank — ${prompt.activity_label}\n\n${buildFullPrompt(variation, prompt.preparation_prompt, prompt.role_context)}`;
@@ -179,6 +176,14 @@ export const PromptCard = ({ prompt, lang, index }) => {
                         <span className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)]">
                             {prompt.methodology}
                         </span>
+                        {prompt.vocab_activity_name && (
+                            <span
+                                className="pb-mono text-[10px] uppercase tracking-widest px-2 py-1 border border-[var(--pb-text)] text-[var(--pb-text)]"
+                                data-testid={`${testIdPrefix}-vocab-activity`}
+                            >
+                                {prompt.vocab_activity_name}
+                            </span>
+                        )}
                     </div>
                     <h3 className="pb-serif text-2xl md:text-[1.625rem] tracking-tight text-[var(--pb-text)]">
                         {prompt.activity_label}
@@ -233,28 +238,6 @@ export const PromptCard = ({ prompt, lang, index }) => {
                 <Section kind="before" label={t(lang, "before")} body={variation.before} lang={lang} testIdPrefix={testIdPrefix} />
                 <Section kind="during" label={t(lang, "during")} body={variation.during} lang={lang} testIdPrefix={testIdPrefix} />
                 <Section kind="after"  label={t(lang, "after")}  body={variation.after}  lang={lang} testIdPrefix={testIdPrefix} />
-            </div>
-
-            {/* Spaced repetition */}
-            <div className="pt-6 border-t border-[var(--pb-border)] print:hidden">
-                <div className="pb-eyebrow mb-3">{t(lang, "return_kicker")} — {t(lang, "return_title")}</div>
-                <div className="flex flex-col md:flex-row md:items-center gap-3 md:gap-6">
-                    {[
-                        { key: "tomorrow", label: t(lang, "day_tomorrow") },
-                        { key: "day_3", label: t(lang, "day_3") },
-                        { key: "day_7", label: t(lang, "day_7") },
-                    ].map((r) => (
-                        <label key={r.key} className="flex items-center gap-2 cursor-pointer pb-sans text-sm text-[var(--pb-text)]" data-testid={`${testIdPrefix}-return-${r.key}`}>
-                            <input
-                                type="checkbox"
-                                checked={returns[r.key]}
-                                onChange={() => toggleReturn(r.key)}
-                                className="pb-checkbox"
-                            />
-                            <span className={returns[r.key] ? "line-through text-[var(--pb-text-muted)]" : ""}>{r.label}</span>
-                        </label>
-                    ))}
-                </div>
             </div>
 
             <div className="flex justify-end print:hidden">
