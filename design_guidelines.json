@@ -1,0 +1,163 @@
+{
+  "theme": "light",
+  "archetype": "4",
+  "archetype_name": "Swiss & High-Contrast (Editorial/Academic Variant)",
+  "aesthetic_vibe": "Serious educational instrument, editorial publication, print-inspired, structured, academic-modern.",
+  "color_system": {
+    "backgrounds": {
+      "app": "#F7F5F0",
+      "card": "#FFFFFF",
+      "input": "transparent",
+      "highlight": "#F0EFEB"
+    },
+    "text": {
+      "primary": "#1C1C1A",
+      "secondary": "#575753",
+      "muted": "#8A8A85",
+      "inverse": "#F7F5F0"
+    },
+    "borders": {
+      "default": "#E6E4DF",
+      "focus": "#1C1C1A"
+    },
+    "functional": {
+      "before_phase": {
+        "solid": "#6D28D9",
+        "bg": "#F3E8FF",
+        "border": "#D8B4FE",
+        "text": "#581C87"
+      },
+      "during_phase": {
+        "solid": "#2563EB",
+        "bg": "#DBEAFE",
+        "border": "#93C5FD",
+        "text": "#1E40AF"
+      },
+      "after_phase": {
+        "solid": "#059669",
+        "bg": "#D1FAE5",
+        "border": "#6EE7B7",
+        "text": "#065F46"
+      },
+      "notebooklm": {
+        "bg": "#DBEAFE",
+        "text": "#1E40AF",
+        "border": "#93C5FD"
+      },
+      "chatgpt_gemini": {
+        "bg": "#D1FAE5",
+        "text": "#065F46",
+        "border": "#6EE7B7"
+      },
+      "claude": {
+        "bg": "#F3E8FF",
+        "text": "#581C87",
+        "border": "#D8B4FE"
+      }
+    }
+  },
+  "typography": {
+    "rules": "NO INTER OR ROBOTO. Use highly structured editorial typography combining Serif for display, Sans for legibility, and Mono for technical data.",
+    "fonts": {
+      "headings": {
+        "family": "Newsreader, serif",
+        "weights": ["400", "500", "600"],
+        "usage": "H1, H2, major step titles, prompt card titles."
+      },
+      "body": {
+        "family": "Work Sans, sans-serif",
+        "weights": ["400", "500"],
+        "usage": "Paragraphs, instructions, general UI text."
+      },
+      "mono": {
+        "family": "JetBrains Mono, monospace",
+        "weights": ["400"],
+        "usage": "CEFR levels (A1, B2, etc.), code blocks, actual prompt text, small metadata tags."
+      }
+    },
+    "scale": {
+      "h1": "text-4xl md:text-5xl tracking-tight font-serif",
+      "h2": "text-2xl md:text-3xl tracking-tight font-serif",
+      "h3": "text-xl font-serif",
+      "body": "text-base leading-relaxed font-sans",
+      "mono_small": "text-sm font-mono tracking-tight",
+      "label": "text-xs uppercase tracking-[0.15em] font-sans font-medium"
+    }
+  },
+  "spacing_and_layout": {
+    "philosophy": "Generous spacing. Think of print margins on high-quality paper. Use asymmetric grids where applicable but maintain strict vertical rhythm.",
+    "container": "max-w-5xl mx-auto px-6 md:px-12 py-12 md:py-20",
+    "gaps": {
+      "section": "gap-12 md:gap-16",
+      "component": "gap-6",
+      "tight": "gap-2"
+    },
+    "grid_patterns": {
+      "aspects_grid": "grid-cols-2 md:grid-cols-4 gap-4",
+      "cefr_grid": "grid-cols-4 md:grid-cols-8 gap-2",
+      "activities_grid": "grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+    },
+    "radii": "rounded-none or rounded-sm. Avoid heavily rounded corners to maintain the 'instrument' feel."
+  },
+  "components": {
+    "header": {
+      "style": "Minimalist top bar. Left: 'AI Prompt Bank' in serif + Byline. Right: EN/UK language toggle.",
+      "byline": "text-xs font-mono text-secondary. 'by Valentyna Gordiienko, Sr. LXD, DLI'"
+    },
+    "progress_indicator": {
+      "style": "Architectural segmented line (1px high) spanning the width of the container. Active segment is charcoal, inactive is light gray."
+    },
+    "wizard_steps": {
+      "step_0_aspects": "Cards with emoji + serif title. Hover state: 1px solid charcoal border, off-white bg.",
+      "step_1_topic": "Adaptive input: Massive font-serif transparent background with 1px bottom border. Looks like writing on a blank page. Below it: 4 horizontal diagnostic radio-buttons.",
+      "step_2_cefr": "8-cell grid. Font-mono for levels. Minimalist toggle style.",
+      "step_3_energy": "3-column wide segmented control.",
+      "step_4_bloom": "Vertical stepper or horizontal connected nodes. Font-serif for the taxonomy level name, font-sans for description.",
+      "step_5_activities": "Pills/Cards with 1px border. Colored based on AI tool requirement (NotebookLM/Blue, ChatGPT/Green, Claude/Purple)."
+    },
+    "result_cards": {
+      "container": "bg-white border border-[#E6E4DF] shadow-sm p-6 md:p-8 flex flex-col gap-6",
+      "tabs": "MAIN / EASIER / HARDER as minimalist text tabs with underline indicator for active.",
+      "sections": {
+        "before": "Left border 4px solid #6D28D9 (Purple). Includes Activation prompt.",
+        "during": "Left border 4px solid #2563EB (Blue). Includes Main Task prompt.",
+        "after": "Left border 4px solid #059669 (Green). Includes Reflection prompt."
+      },
+      "prompt_block": "bg-[#F7F5F0] p-4 font-mono text-sm relative group. Includes 'Copy' button appearing on hover.",
+      "spaced_repetition": "Bottom bar of the After card. 3 checkboxes: Tomorrow, Day 3, Day 7. Styling: minimalist square checkboxes."
+    }
+  },
+  "motion_and_interactions": {
+    "hover_states": "Crisp transitions. 1px borders become darker. Backgrounds shift slightly (e.g., white to off-white). No blurry shadows.",
+    "focus_states": "2px solid charcoal outline offset by 2px (ring-2 ring-offset-2 ring-[#1C1C1A]).",
+    "transitions": "transition-colors duration-200 ease-in-out."
+  },
+  "accessibility_and_testing": {
+    "contrast": "Ensure all text meets WCAG AA standards against #F7F5F0 and #FFFFFF backgrounds. Colored badges must have dark enough text.",
+    "testing_attributes": "Add data-testid to every interactive element (e.g., data-testid='lang-toggle', data-testid='aspect-card-vocabulary', data-testid='copy-prompt-btn')."
+  },
+  "media": {
+    "images": [
+      {
+        "category": "author_portrait",
+        "url": "https://images.unsplash.com/photo-1734554118661-29139b63546c?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA1MTN8MHwxfHNlYXJjaHwxfHx3b21hbiUyMGF1dGhvciUyMHBvcnRyYWl0JTIwcHJvZmVzc2lvbmFsfGVufDB8fHx8MTc3Nzg5Njc3N3ww&ixlib=rb-4.1.0&q=85",
+        "description": "Professional author portrait for Valentyna's byline/about section if needed."
+      },
+      {
+        "category": "architectural_inspiration",
+        "url": "https://images.unsplash.com/photo-1672509521256-dd94d6fb8ea2?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjA3MDR8MHwxfHNlYXJjaHwyfHxwcmVtaXVtJTIwbGlicmFyeSUyMGFyY2hpdGVjdHVyZXxlbnwwfHx8fDE3Nzc4OTY3Nzd8MA&ixlib=rb-4.1.0&q=85",
+        "description": "Library ceiling architecture. Could be used at low opacity for an introductory hero section if an onboarding page is built."
+      }
+    ]
+  },
+  "instructions_to_main_agent": [
+    "Install and configure Work Sans, Newsreader, and JetBrains Mono from Google Fonts.",
+    "Implement the background as an off-white/ivory (#F7F5F0) to give it an editorial 'print' feel.",
+    "Strictly avoid default Inter or Roboto. Do not use standard Shadcn card styles (heavily rounded/shadowed); customize them to be flatter with 1px sharp borders.",
+    "Implement the 6-step wizard using state management. Use smooth sliding or fading transitions between steps.",
+    "In Step 1, the 'adaptive placeholder' means a large input field where typing feels like writing an article headline.",
+    "Implement the hard-coded color logic for Before (Purple), During (Blue), After (Green).",
+    "For the Spaced Repetition checkboxes, use a minimalist custom design, not default browser checkboxes.",
+    "Remember to include data-testid on ALL interactive elements."
+  ]
+}
