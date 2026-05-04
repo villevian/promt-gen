@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Sparkles } from "lucide-react";
 import { t } from "../lib/i18n";
 
 const TOOL_LABEL = {
@@ -24,62 +24,88 @@ const buildFullPrompt = (variation) => {
     return `--- BEFORE ---\n${variation.before.trim()}\n\n--- DURING ---\n${variation.during.trim()}\n\n--- AFTER ---\n${variation.after.trim()}`;
 };
 
-const Section = ({ kind, label, body, lang, testIdPrefix }) => {
+const CopyBtn = ({ onClick, copied, lang, testId }) => (
+    <button
+        onClick={onClick}
+        className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)] hover:text-[var(--pb-text)] flex items-center gap-1 transition-colors"
+        data-testid={testId}
+    >
+        {copied ? <Check size={12} /> : <Copy size={12} />}
+        {copied ? t(lang, "copied") : t(lang, "copy")}
+    </button>
+);
+
+const useCopier = () => {
     const [copied, setCopied] = useState(false);
-    const handleCopy = async () => {
+    const copy = async (text) => {
         try {
-            await navigator.clipboard.writeText(body.trim());
+            await navigator.clipboard.writeText(text);
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
         } catch {
-            // ignore
+            /* ignore */
         }
     };
+    return [copied, copy];
+};
+
+const Section = ({ kind, label, body, lang, testIdPrefix }) => {
+    const [copied, copy] = useCopier();
     return (
         <div className="pl-4" style={{ borderLeft: `4px solid ${SECTION_BORDER[kind]}` }} data-testid={`${testIdPrefix}-${kind}`}>
             <div className="flex items-center justify-between mb-2">
                 <div className="pb-eyebrow" style={{ color: SECTION_BORDER[kind] }}>{label}</div>
-                <button
-                    onClick={handleCopy}
-                    className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)] hover:text-[var(--pb-text)] flex items-center gap-1 transition-colors"
-                    data-testid={`${testIdPrefix}-copy-${kind}`}
-                >
-                    {copied ? <Check size={12} /> : <Copy size={12} />}
-                    {copied ? t(lang, "copied") : t(lang, "copy")}
-                </button>
+                <CopyBtn onClick={() => copy(body.trim())} copied={copied} lang={lang} testId={`${testIdPrefix}-copy-${kind}`} />
             </div>
             <div className="pb-prompt-block">{body.trim()}</div>
         </div>
     );
 };
 
+const PreparationBlock = ({ prompt, lang, testIdPrefix }) => {
+    const [copied, copy] = useCopier();
+    return (
+        <section
+            className="relative pb-glass-strong p-5 md:p-6"
+            data-testid={`${testIdPrefix}-preparation`}
+        >
+            <div className="flex items-center gap-2 mb-2">
+                <span className="pb-mono text-[10px] uppercase tracking-widest px-2 py-1 border flex items-center gap-1"
+                    style={{ background: "var(--pb-before-bg)", color: "var(--pb-before-text)", borderColor: "var(--pb-before-border)" }}>
+                    <Sparkles size={11} /> {t(lang, "prep_badge")}
+                </span>
+                <span className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)]">
+                    ChatGPT · Claude · Gemini
+                </span>
+            </div>
+            <h4 className="pb-serif text-xl text-[var(--pb-text)] mb-1">{t(lang, "prep_title")}</h4>
+            <p className="text-[12px] text-[var(--pb-text-secondary)] mb-4">{t(lang, "prep_sub")}</p>
+            <div className="flex items-center justify-between mb-2">
+                <div className="pb-eyebrow">Prompt</div>
+                <CopyBtn onClick={() => copy(prompt.trim())} copied={copied} lang={lang} testId={`${testIdPrefix}-copy-prep`} />
+            </div>
+            <div className="pb-prompt-block">{prompt.trim()}</div>
+        </section>
+    );
+};
+
 export const PromptCard = ({ prompt, lang, index }) => {
     const [activeVariation, setActiveVariation] = useState(0);
     const [returns, setReturns] = useState({ tomorrow: false, day_3: false, day_7: false });
-    const [fullCopied, setFullCopied] = useState(false);
+    const [fullCopied, copyFull] = useCopier();
 
     const variation = prompt.variations[activeVariation];
     const tool = TOOL_COLOR[prompt.tool];
     const testIdPrefix = `prompt-${index}`;
 
-    const handleCopyFull = async () => {
-        try {
-            await navigator.clipboard.writeText(buildFullPrompt(variation));
-            setFullCopied(true);
-            setTimeout(() => setFullCopied(false), 1500);
-        } catch {
-            // ignore
-        }
-    };
-
     const toggleReturn = (k) => setReturns((s) => ({ ...s, [k]: !s[k] }));
 
     return (
-        <article className="pb-card p-6 md:p-8 flex flex-col gap-7" data-testid={`prompt-card-${index}`}>
+        <article className="pb-glass-strong p-6 md:p-8 flex flex-col gap-7" data-testid={`prompt-card-${index}`}>
             {/* Header */}
             <header className="flex flex-col md:flex-row md:items-start md:justify-between gap-4 pb-6 border-b border-[var(--pb-border)]">
                 <div>
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="flex items-center gap-2 mb-2 flex-wrap">
                         <span
                             className="pb-mono text-[10px] uppercase tracking-widest px-2 py-1 border"
                             style={{ background: tool.bg, color: tool.text, borderColor: tool.border }}
@@ -99,6 +125,17 @@ export const PromptCard = ({ prompt, lang, index }) => {
                     </div>
                 </div>
             </header>
+
+            {/* Optional preparation prompt */}
+            {prompt.needs_preparation && prompt.preparation_prompt && (
+                <PreparationBlock prompt={prompt.preparation_prompt} lang={lang} testIdPrefix={testIdPrefix} />
+            )}
+
+            {prompt.needs_preparation && prompt.preparation_prompt && (
+                <div className="pb-eyebrow -mb-3" data-testid={`${testIdPrefix}-main-title`}>
+                    {t(lang, "main_title")}
+                </div>
+            )}
 
             {/* Variation tabs */}
             <div className="flex gap-1 -mb-3" data-testid={`${testIdPrefix}-variation-tabs`}>
@@ -143,10 +180,9 @@ export const PromptCard = ({ prompt, lang, index }) => {
                 </div>
             </div>
 
-            {/* Footer action */}
             <div className="flex justify-end">
                 <button
-                    onClick={handleCopyFull}
+                    onClick={() => copyFull(buildFullPrompt(variation))}
                     className="pb-button-primary flex items-center gap-2"
                     data-testid={`${testIdPrefix}-copy-full`}
                 >

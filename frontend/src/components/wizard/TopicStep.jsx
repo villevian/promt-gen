@@ -73,7 +73,7 @@ export const TopicStep = ({ aspect, topic, setTopic, prior, setPrior, problem, s
                         onChange={(e) => setProblem(e.target.value)}
                         placeholder={t(lang, "step1_problem_ph")}
                         rows={3}
-                        className="w-full p-3 bg-[var(--pb-card)] border border-[var(--pb-border)] focus:border-[var(--pb-text)] outline-none pb-sans text-sm text-[var(--pb-text)] transition-colors resize-none"
+                        className="w-full p-3 bg-white/60 backdrop-blur border border-[var(--pb-border)] focus:border-[var(--pb-text)] outline-none pb-sans text-sm text-[var(--pb-text)] transition-colors resize-none"
                         data-testid="problem-input"
                     />
                 </div>

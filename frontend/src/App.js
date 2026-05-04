@@ -10,13 +10,14 @@ import { TopicStep } from "./components/wizard/TopicStep";
 import { LevelStep } from "./components/wizard/LevelStep";
 import { EnergyStep } from "./components/wizard/EnergyStep";
 import { BloomStep } from "./components/wizard/BloomStep";
+import { MaterialStep } from "./components/wizard/MaterialStep";
 import { ActivitiesStep } from "./components/wizard/ActivitiesStep";
 import { ResultsView } from "./components/ResultsView";
 import { t } from "./lib/i18n";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 
 const INITIAL_STATE = {
     aspect: null,
@@ -27,6 +28,7 @@ const INITIAL_STATE = {
     level: null,
     energy: null,
     bloom: null,
+    material: null,
     activities: [],
     customActivity: "",
 };
@@ -57,21 +59,23 @@ function Intro({ lang, onStart }) {
                     </div>
                 </div>
                 <div className="md:col-span-4">
-                    <div className="pb-mono text-xs uppercase tracking-[0.2em] text-[var(--pb-text-muted)] mb-4">
-                        Methodology
+                    <div className="pb-glass p-6">
+                        <div className="pb-mono text-xs uppercase tracking-[0.2em] text-[var(--pb-text-muted)] mb-4">
+                            Methodology
+                        </div>
+                        <ul className="space-y-3 pb-mono text-[11px] text-[var(--pb-text-secondary)]">
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Krashen</span><span>Input i+1</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Lewis</span><span>Lexical chunks</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Long, Ellis</span><span>Focus on Form</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Willis</span><span>CLT / TBLT</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Swain</span><span>Output</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Ebbinghaus</span><span>Spaced repetition</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Hattie</span><span>Self-rating</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Wiggins</span><span>Success criteria</span></li>
+                            <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Bjork</span><span>Desirable difficulty</span></li>
+                            <li className="flex justify-between"><span>Ausubel</span><span>Schema activation</span></li>
+                        </ul>
                     </div>
-                    <ul className="space-y-3 pb-mono text-[11px] text-[var(--pb-text-secondary)]">
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Krashen</span><span>Input i+1</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Lewis</span><span>Lexical chunks</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Long, Ellis</span><span>Focus on Form</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Willis</span><span>CLT / TBLT</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Swain</span><span>Output</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Ebbinghaus</span><span>Spaced repetition</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Hattie</span><span>Self-rating</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Wiggins</span><span>Success criteria</span></li>
-                        <li className="flex justify-between border-b border-[var(--pb-border)] pb-2"><span>Bjork</span><span>Desirable difficulty</span></li>
-                        <li className="flex justify-between"><span>Ausubel</span><span>Schema activation</span></li>
-                    </ul>
                 </div>
             </div>
         </div>
@@ -104,6 +108,11 @@ function App() {
         document.documentElement.lang = lang;
     }, [lang]);
 
+    useEffect(() => {
+        const url = `${process.env.PUBLIC_URL || ""}/bg.png`;
+        document.body.style.backgroundImage = `url("${url}")`;
+    }, []);
+
     const update = (patch) => setState((s) => ({ ...s, ...patch }));
 
     const reset = () => {
@@ -126,7 +135,8 @@ function App() {
             case 2: return !!state.level;
             case 3: return !!state.energy;
             case 4: return !!state.bloom;
-            case 5: return state.activities.length > 0 || state.customActivity.trim().length > 0;
+            case 5: return !!state.material;
+            case 6: return state.activities.length > 0 || state.customActivity.trim().length > 0;
             default: return false;
         }
     }, [step, state]);
@@ -137,7 +147,7 @@ function App() {
                 if (!state.topic.trim()) toast.error(t(lang, "error_topic"));
                 else if (state.aspect === "custom" && !state.aspectCustom.trim()) toast.error(t(lang, "error_aspect_custom"));
                 else if (state.prior === "specific_problem" && !state.problem.trim()) toast.error(t(lang, "error_problem"));
-            } else if (step === 5) {
+            } else if (step === 6) {
                 toast.error(t(lang, "error_activity"));
             }
             return;
@@ -182,6 +192,7 @@ function App() {
                 level: state.level,
                 energy: state.energy,
                 bloom_stage: state.bloom,
+                material_status: state.material || "have",
                 activities: state.activities,
                 custom_activity: state.customActivity || null,
                 language: lang,
@@ -228,7 +239,7 @@ function App() {
     };
 
     return (
-        <div className="App min-h-screen">
+        <div className="App min-h-screen relative">
             <Toaster position="top-center" theme="light" />
             <Header lang={lang} setLang={setLang} onReset={reset} />
 
@@ -237,21 +248,23 @@ function App() {
             {phase === "wizard" && (
                 <>
                     <ProgressIndicator step={step} total={TOTAL_STEPS} lang={lang} />
-                    <main className="max-w-6xl mx-auto px-6 md:px-12 py-10 md:py-14" data-testid="wizard-main">
-                        {renderStep()}
-                        <nav className="mt-14 pt-8 border-t border-[var(--pb-border)] flex flex-col-reverse md:flex-row md:justify-between gap-3">
-                            <button onClick={back} className="pb-button-ghost" data-testid="wizard-back">
-                                ← {t(lang, "back")}
-                            </button>
-                            <button
-                                onClick={next}
-                                disabled={!canAdvance}
-                                className="pb-button-primary"
-                                data-testid="wizard-next"
-                            >
-                                {step === TOTAL_STEPS - 1 ? t(lang, "generate") : t(lang, "next")} →
-                            </button>
-                        </nav>
+                    <main className="max-w-6xl mx-auto px-6 md:px-12 my-8 md:my-10" data-testid="wizard-main">
+                        <div className="pb-glass p-6 md:p-10">
+                            {renderStep()}
+                            <nav className="mt-14 pt-8 border-t border-[var(--pb-border)] flex flex-col-reverse md:flex-row md:justify-between gap-3">
+                                <button onClick={back} className="pb-button-ghost" data-testid="wizard-back">
+                                    ← {t(lang, "back")}
+                                </button>
+                                <button
+                                    onClick={next}
+                                    disabled={!canAdvance}
+                                    className="pb-button-primary"
+                                    data-testid="wizard-next"
+                                >
+                                    {step === TOTAL_STEPS - 1 ? t(lang, "generate") : t(lang, "next")} →
+                                </button>
+                            </nav>
+                        </div>
                     </main>
                 </>
             )}
@@ -267,10 +280,10 @@ function App() {
                 />
             )}
 
-            <footer className="border-t border-[var(--pb-border)] mt-16">
+            <footer className="border-t border-[var(--pb-border)] pb-glass mt-16">
                 <div className="max-w-6xl mx-auto px-6 md:px-12 py-8 flex flex-col md:flex-row gap-3 justify-between items-start md:items-center pb-mono text-[11px] text-[var(--pb-text-muted)]">
                     <div>{t(lang, "byline")}</div>
-                    <div>{t(lang, "brand")} · {new Date().getFullYear()} · Powered by Claude Sonnet 4.5</div>
+                    <div>{t(lang, "brand")} · {new Date().getFullYear()} · Powered by Claude Haiku 4.5</div>
                 </div>
             </footer>
         </div>

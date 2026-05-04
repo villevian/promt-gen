@@ -43,10 +43,19 @@ export const translations = {
         // Step 4
         step4_kicker: "05 — Where you are in the learning",
         step4_title: "Pick the stage that matches today.",
-        step4_sub: "Adapted from Bloom's taxonomy. The prompt's task complexity follows your choice.",
+        step4_sub: "Read the student-voice problems under each stage and pick the one that sounds like you. (The prompt's task complexity follows your choice.)",
 
-        // Step 5
-        step5_kicker: "06 — How do you want to practise?",
+        // Step 5 — Material check (new)
+        material_kicker: "06 — Source material",
+        material_title: "Do you have material to work with?",
+        material_sub: "NotebookLM activities need source material (article, transcript, notes). If you don't have any yet, we'll give you a prep-prompt for ChatGPT/Claude/Gemini to generate it first.",
+        material_have_title: "Yes, I have material",
+        material_have_sub: "I have an article / transcript / notes I can paste into NotebookLM.",
+        material_need_title: "No — I need it generated",
+        material_need_sub: "Give me a prep-prompt to generate source material first, then the main prompt.",
+
+        // Step 6 — Activities (was 5)
+        step5_kicker: "07 — How do you want to practise?",
         step5_title: "Choose one or several activities.",
         step5_sub: "Activities outlined in green are the recommended pairings for your aspect and stage. Each will become a separate prompt card.",
         step5_custom: "Or describe your own activity",
@@ -83,6 +92,10 @@ export const translations = {
         copied: "Copied",
         copy_full: "Copy full prompt",
         where_to_paste: "Paste it into",
+        prep_badge: "Preparation prompt",
+        prep_title: "Step 1 — generate the source material",
+        prep_sub: "Paste this into ChatGPT, Claude or Gemini. Copy the output, then create a new notebook in NotebookLM and paste it as a source.",
+        main_title: "Step 2 — the learning prompt",
         return_kicker: "Spaced repetition",
         return_title: "Come back to this",
         day_tomorrow: "Tomorrow — brain dump",
@@ -113,7 +126,7 @@ export const translations = {
         generate: "Згенерувати промти",
         regenerate: "Зробити нові промти",
         loading: "Створюємо твої промти…",
-        loading_sub: "Claude Sonnet 4.5 пише промти, обґрунтовані методично, для кожної активності. Зазвичай 10–20 сек.",
+        loading_sub: "Claude Haiku 4.5 пише промти, методично обґрунтовані для кожної активності. Зазвичай 6–12 сек.",
 
         step0_kicker: "01 — Що тренуємо?",
         step0_title: "Вибери аспект мови.",
@@ -136,9 +149,18 @@ export const translations = {
 
         step4_kicker: "05 — Де ти на шляху навчання",
         step4_title: "Обери етап, що відповідає сьогоднішньому стану.",
-        step4_sub: "Адаптована таксономія Блума. Складність завдання промту відповідатиме твоєму вибору.",
+        step4_sub: "Прочитай фрази «від першої особи» під кожним етапом і обери ту, у якій впізнаєш себе. (Складність завдання промту адаптується під твій вибір.)",
 
-        step5_kicker: "06 — Як хочеш практикуватись?",
+        // Step 5 — Material check (new)
+        material_kicker: "06 — Джерельний матеріал",
+        material_title: "Чи маєш матеріал для роботи?",
+        material_sub: "Для активностей NotebookLM потрібне джерело (стаття, транскрипт, конспект). Якщо у тебе його ще немає — дамо підготовчий промт для ChatGPT/Claude/Gemini, щоб згенерувати матеріал.",
+        material_have_title: "Так, маю матеріал",
+        material_have_sub: "Маю статтю / транскрипт / нотатки, які можу вставити в NotebookLM.",
+        material_need_title: "Ні — треба згенерувати",
+        material_need_sub: "Дай мені підготовчий промт, щоб спочатку створити матеріал, а тоді основний промт.",
+
+        step5_kicker: "07 — Як хочеш практикуватись?",
         step5_title: "Обери одну або кілька активностей.",
         step5_sub: "Активності в зеленій рамці — рекомендовані для твого аспекту й етапу. Кожна стане окремою карткою промту.",
         step5_custom: "Або опиши свою активність",
@@ -171,6 +193,10 @@ export const translations = {
         copied: "Скопійовано",
         copy_full: "Копіювати весь промт",
         where_to_paste: "Куди вставляти",
+        prep_badge: "Підготовчий промт",
+        prep_title: "Крок 1 — згенеруй матеріал",
+        prep_sub: "Встав у ChatGPT, Claude або Gemini. Скопіюй відповідь, створи новий notebook у NotebookLM і встав як джерело.",
+        main_title: "Крок 2 — навчальний промт",
         return_kicker: "Повторення",
         return_title: "Повернися до цього",
         day_tomorrow: "Завтра — мозковий дамп",

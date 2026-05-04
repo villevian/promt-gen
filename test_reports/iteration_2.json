@@ -1,0 +1,59 @@
+{
+  "summary": "Iteration 2 testing of AI Prompt Bank (Claude Haiku 4.5). Backend is fully working: 7/7 pytest pass including the new material_status / preparation_prompt logic. Multi-activity timeout from iteration 1 is resolved by Haiku 4.5. Frontend has TWO blocking bugs: (1) syntax error in src/lib/i18n.js (stray '?? key;' line) prevented compilation entirely — fixed by testing agent; (2) src/App.js renderStep() is missing cases for the new MaterialStep, so step 5 renders ActivitiesStep and step 6 renders nothing. Wizard is stuck at step 5 because canAdvance gates on state.material which is unreachable. End-to-end flow (and therefore PreparationBlock UI) cannot be tested.",
+  "backend_issues": {
+    "critical": [],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [
+      {
+        "component": "src/App.js renderStep()",
+        "issue": "Missing case 5 (MaterialStep) and case 6 (ActivitiesStep). Currently case 5 returns ActivitiesStep and case 6 returns null. canAdvance() expects case 5 = material, case 6 = activities, and TOTAL_STEPS=7. Result: at step index 5 the user sees ActivitiesStep, but wizard-next stays disabled because state.material is null and no MaterialStep is reachable. Step 6 shows blank content. Entire flow past step 4 (Bloom) is broken. MaterialStep is imported but never rendered.",
+        "selector": "[data-testid=\"wizard-main\"]",
+        "priority": "CRITICAL"
+      },
+      {
+        "component": "src/lib/i18n.js (line 216)",
+        "issue": "Stray '?? key;' line after the export caused babel SyntaxError 'Unexpected token (216:0)'. Frontend would not compile at all — overlay 'Compiled with problems' blocked the page. FIXED by testing agent (removed dangling line).",
+        "selector": "n/a (build error)",
+        "priority": "CRITICAL"
+      }
+    ],
+    "integration_issues": [
+      {
+        "flow": "Full wizard → results with material=need + flashcards (preparation prompt UI)",
+        "issue": "Cannot be reached from the UI because of the renderStep() bug above. Backend returns the correct preparation_prompt payload (verified via pytest), but PromptCard PreparationBlock and data-testid=prompt-{i}-preparation / prompt-{i}-copy-prep could not be exercised end-to-end.",
+        "affected_selectors": ["[data-testid=\"material-have\"]", "[data-testid=\"material-need\"]", "[data-testid^=\"prompt-\"][data-testid$=\"-preparation\"]", "[data-testid^=\"prompt-\"][data-testid$=\"-copy-prep\"]"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "FIX src/App.js renderStep(): add case 5 → <MaterialStep value={state.material} onChange={(v)=>update({material:v})} lang={lang}/> and case 6 → <ActivitiesStep ... /> (move the existing ActivitiesStep block from case 5 to case 6).",
+    "After the renderStep fix, retest end-to-end (material=need + flashcards) and verify PreparationBlock renders above MAIN/EASIER/HARDER tabs with purple 'Preparation prompt' badge and copy-prep button works.",
+    "Add a CRA build step / lint to CI so a bare '?? key;' line cannot ship again — this kind of syntax error must not reach a release."
+  ],
+  "critical_code_review_comments": [
+    "App.js: TOTAL_STEPS=7 but switch only covers cases 0–5 — no fallback assertion or unit test catches this. Consider an array of step components instead of a switch to keep canAdvance and renderStep aligned.",
+    "App.js: canAdvance and renderStep share an implicit contract on step indices but live in two places — high risk of drift, exactly what happened here.",
+    "i18n.js: a malformed export survived because there is no lint/build gate before deploy; please add 'yarn build' to pre-merge.",
+    "server.py: extract_json still raises 502 on any LLM parse failure with no retry — Haiku 4.5 is faster but not infallible; one cheap retry would harden this.",
+    "server.py: asyncio.gather still fails fast — one failing activity discards all other completed prompts. Use return_exceptions=True and surface partial results.",
+    "PromptCard.jsx not inspected directly, but verify PreparationBlock test-ids match the spec: prompt-{i}-preparation and prompt-{i}-copy-prep."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (rewritten for Haiku 4.5 + material_status tests)",
+    "/app/frontend/src/lib/i18n.js (removed stray '?? key;' line so app compiles)"
+  ],
+  "success_rate": {"backend": "100% (7/7 pytest pass)", "frontend": "blocked at step 5 — steps 0–4 work; steps 5/6 unreachable until renderStep is fixed"},
+  "test_credentials": "N/A — app has no auth",
+  "seed_data_creation": "None — app has no persistence",
+  "retest_needed": true,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend is solid on Haiku 4.5: GET /api/ → model claude-haiku-4-5-20251001; single-activity ~5–8s; material_status='have'+flashcards → needs_preparation=false; material_status='need'+flashcards → needs_preparation=true with non-empty preparation_prompt; material_status='need'+roleplay → still false (only NLM tools get prep); mixed [flashcards,roleplay] with need → only flashcards has prep. After main agent fixes App.js renderStep (add case 5=MaterialStep, case 6=ActivitiesStep), re-run a full wizard with material=need + flashcards and verify the PreparationBlock card renders above MAIN/EASIER/HARDER and prompt-0-copy-prep works. Also re-verify the lang toggle on the Material step (data-testid=material-have / material-need). BloomStep symptoms render correctly (e.g., 'I haven't met this topic yet.'). What/How descriptions are visible on activity cards. Background image loads (200 OK).",
+  "rca of the issue": "Bug 1 (i18n.js): During the EN/UK i18n update an editor accidentally pasted a duplicate '?? key;' fragment at line 216, after the closed arrow function on line 215. Babel parser fails with 'Unexpected token (216:0)'. CRA dev-server keeps the previous bundle but shows the red 'Compiled with problems' overlay; production build would fail outright. Fix: delete the orphan line. Bug 2 (App.js renderStep): TOTAL_STEPS was bumped from 6 to 7 and a MaterialStep was added between Bloom (4) and Activities, but only canAdvance was updated to add case 5=material and case 6=activities. renderStep() still has case 5 returning ActivitiesStep and no case 6, so MaterialStep never renders and the wizard cannot advance past index 5 (button stays disabled because state.material is null). Reproduction: open app → start → vocabulary → topic+some_gaps → B2 → normal → bloom → click Next; you land on indicator '06 of 07' but the screen shows the activities grid and the next button is disabled even after picking an activity. Mitigation: add case 5 → MaterialStep and case 6 → ActivitiesStep (or refactor switch into a STEPS array)."
+}

@@ -1,5 +1,5 @@
 import React from "react";
-import { BLOOM_STAGES, BLOOM_LABELS } from "../../lib/wizardData";
+import { BLOOM_STAGES, BLOOM_LABELS, BLOOM_SYMPTOMS } from "../../lib/wizardData";
 import { t } from "../../lib/i18n";
 
 export const BloomStep = ({ aspect, value, onChange, lang }) => {
@@ -17,20 +17,26 @@ export const BloomStep = ({ aspect, value, onChange, lang }) => {
                 {BLOOM_STAGES.map((stage, idx) => {
                     const selected = value === stage;
                     const label = labelMap[stage]?.[lang] || labelMap[stage]?.en || stage;
+                    const symptoms = BLOOM_SYMPTOMS[stage]?.[lang] || BLOOM_SYMPTOMS[stage]?.en || "";
                     return (
                         <button
                             key={stage}
                             onClick={() => onChange(stage)}
-                            className={`pb-card w-full text-left p-4 md:p-5 flex items-center gap-5 cursor-pointer ${selected ? "pb-card-selected" : ""}`}
+                            className={`pb-card w-full text-left p-4 md:p-5 flex items-start gap-5 cursor-pointer ${selected ? "pb-card-selected" : ""}`}
                             data-testid={`bloom-${stage}`}
                         >
-                            <span className="pb-mono text-xs text-[var(--pb-text-muted)] w-8 flex-shrink-0">
+                            <span className="pb-mono text-xs text-[var(--pb-text-muted)] w-8 flex-shrink-0 pt-1">
                                 {String(idx + 1).padStart(2, "0")}
                             </span>
-                            <span className="pb-serif text-lg md:text-xl text-[var(--pb-text)] leading-snug flex-1">
-                                {label}
+                            <span className="flex-1 min-w-0">
+                                <span className="pb-serif text-lg md:text-xl text-[var(--pb-text)] leading-snug block">
+                                    {label}
+                                </span>
+                                <span className="pb-sans text-[13px] text-[var(--pb-text-secondary)] italic leading-snug mt-1 block">
+                                    {symptoms}
+                                </span>
                             </span>
-                            <span className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)] hidden md:inline">
+                            <span className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text-muted)] hidden md:inline pt-2">
                                 {stage.replace("_", " ")}
                             </span>
                         </button>

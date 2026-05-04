@@ -3,7 +3,7 @@ import { t } from "../lib/i18n";
 
 export const Header = ({ lang, setLang, onReset }) => {
     return (
-        <header className="border-b border-[var(--pb-border)] bg-[var(--pb-bg)]" data-testid="app-header">
+        <header className="sticky top-0 z-20 border-b border-[var(--pb-border)] pb-glass" data-testid="app-header">
             <div className="max-w-6xl mx-auto px-6 md:px-12 py-5 flex items-baseline justify-between gap-6">
                 <button
                     onClick={onReset}

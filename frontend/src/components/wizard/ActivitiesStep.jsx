@@ -20,17 +20,20 @@ export const ActivitiesStep = ({ aspect, bloom, selected, toggle, customActivity
             <p className="text-[var(--pb-text-secondary)] max-w-2xl mb-6">{t(lang, "step5_sub")}</p>
 
             <div className="flex flex-wrap items-center gap-3 mb-8 pb-mono text-[11px]">
-                <span className="px-2 py-1 border border-[var(--pb-during-border)]" style={{ background: "var(--pb-during-bg)", color: "var(--pb-during-text)" }}>{t(lang, "tool_notebooklm")}</span>
-                <span className="px-2 py-1 border border-[var(--pb-after-border)]" style={{ background: "var(--pb-after-bg)", color: "var(--pb-after-text)" }}>{t(lang, "tool_chatgpt_gemini")}</span>
-                <span className="px-2 py-1 border border-[var(--pb-before-border)]" style={{ background: "var(--pb-before-bg)", color: "var(--pb-before-text)" }}>{t(lang, "tool_claude")}</span>
+                <span className="px-2 py-1 border" style={{ background: "var(--pb-during-bg)", color: "var(--pb-during-text)", borderColor: "var(--pb-during-border)" }}>{t(lang, "tool_notebooklm")}</span>
+                <span className="px-2 py-1 border" style={{ background: "var(--pb-after-bg)", color: "var(--pb-after-text)", borderColor: "var(--pb-after-border)" }}>{t(lang, "tool_chatgpt_gemini")}</span>
+                <span className="px-2 py-1 border" style={{ background: "var(--pb-before-bg)", color: "var(--pb-before-text)", borderColor: "var(--pb-before-border)" }}>{t(lang, "tool_claude")}</span>
                 <span className="px-2 py-1 border border-[#059669]" style={{ color: "#059669" }}>★ {t(lang, "recommended")}</span>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3" data-testid="activities-grid">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="activities-grid">
                 {ACTIVITIES.map((a) => {
                     const isSelected = selected.includes(a.id);
                     const isRecommended = recommended.includes(a.id);
                     const palette = TOOL_BG[a.tool];
+                    const label = lang === "uk" ? a.labelUk : a.labelEn;
+                    const what = lang === "uk" ? a.whatUk : a.whatEn;
+                    const how = lang === "uk" ? a.howUk : a.howEn;
                     return (
                         <button
                             key={a.id}
@@ -44,16 +47,29 @@ export const ActivitiesStep = ({ aspect, bloom, selected, toggle, customActivity
                             >
                                 {a.glyph}
                             </div>
-                            <div className="flex-1">
-                                <div className="pb-serif text-base text-[var(--pb-text)] leading-tight">
-                                    {lang === "uk" ? a.labelUk : a.labelEn}
+                            <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2 mb-2">
+                                    <div className="pb-serif text-base text-[var(--pb-text)] leading-tight">
+                                        {label}
+                                    </div>
+                                    <span
+                                        className="pb-mono text-[9px] uppercase tracking-wider whitespace-nowrap px-1.5 py-0.5 flex-shrink-0"
+                                        style={{ color: palette.text, background: palette.bg }}
+                                    >
+                                        {a.tool === "notebooklm" ? "NLM" : a.tool === "chatgpt_gemini" ? "GPT" : "Claude"}
+                                    </span>
                                 </div>
-                                <div className="pb-mono text-[10px] uppercase tracking-wider mt-1" style={{ color: palette.text }}>
-                                    {a.tool === "notebooklm" ? "NotebookLM" : a.tool === "chatgpt_gemini" ? "ChatGPT / Gemini" : "Claude"}
+                                <div className="text-[12px] text-[var(--pb-text-secondary)] leading-snug mb-1.5">
+                                    <span className="pb-mono text-[10px] uppercase tracking-wider text-[var(--pb-text-muted)] mr-1">What</span>
+                                    {what}
+                                </div>
+                                <div className="text-[12px] text-[var(--pb-text-secondary)] leading-snug">
+                                    <span className="pb-mono text-[10px] uppercase tracking-wider text-[var(--pb-text-muted)] mr-1">How</span>
+                                    {how}
                                 </div>
                             </div>
                             {isSelected && (
-                                <span className="pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text)]">✓</span>
+                                <span className="absolute top-3 right-3 pb-mono text-[10px] uppercase tracking-widest text-[var(--pb-text)]">✓</span>
                             )}
                         </button>
                     );
@@ -67,7 +83,7 @@ export const ActivitiesStep = ({ aspect, bloom, selected, toggle, customActivity
                     onChange={(e) => setCustomActivity(e.target.value)}
                     rows={2}
                     placeholder={t(lang, "step5_custom_ph")}
-                    className="w-full p-3 bg-[var(--pb-card)] border border-[var(--pb-border)] focus:border-[var(--pb-text)] outline-none pb-sans text-sm text-[var(--pb-text)] transition-colors resize-none"
+                    className="w-full p-3 bg-white/60 backdrop-blur border border-[var(--pb-border)] focus:border-[var(--pb-text)] outline-none pb-sans text-sm text-[var(--pb-text)] transition-colors resize-none"
                     data-testid="custom-activity-input"
                 />
             </div>
