@@ -205,25 +205,58 @@ function App() {
             language: lang,
         };
 
-        try {
-            // Progressive: generate one activity at a time so users see results flowing in.
-            setPhase("results");
-            for (let i = 0; i < activityIds.length; i++) {
-                const aid = activityIds[i];
-                setGenProgress({ current: i + 1, total: activityIds.length, currentLabel: aid });
-                const payload = { ...basePayload, activities: aid === "custom" ? [] : [aid] };
-                const res = await axios.post(`${API}/generate-prompts`, payload, { timeout: 90000 });
-                const newPrompts = res.data.prompts || [];
-                setPrompts((prev) => [...prev, ...newPrompts]);
+        const fetchOne = async (aid) => {
+            const payload = { ...basePayload, activities: aid === "custom" ? [] : [aid] };
+            // 1 retry on transient failure (timeout, 502, parse error)
+            for (let attempt = 0; attempt < 2; attempt++) {
+                try {
+                    const res = await axios.post(`${API}/generate-prompts`, payload, { timeout: 90000 });
+                    return res.data.prompts || [];
+                } catch (e) {
+                    if (attempt === 1) throw e;
+                    await new Promise((r) => setTimeout(r, 1500));
+                }
             }
-            setGenProgress({ current: 0, total: 0, currentLabel: "" });
-            window.scrollTo({ top: 0, behavior: "smooth" });
+            return [];
+        };
+
+        // Run in parallel chunks of 3 — keeps UX responsive while halving wall time on large batches.
+        const CHUNK = 3;
+        let completed = 0;
+        let failed = 0;
+        setPhase("results");
+
+        try {
+            for (let i = 0; i < activityIds.length; i += CHUNK) {
+                const slice = activityIds.slice(i, i + CHUNK);
+                setGenProgress({ current: completed + 1, total: activityIds.length, currentLabel: slice.join(", ") });
+                // settle so partial successes are kept
+                const results = await Promise.allSettled(slice.map(fetchOne));
+                results.forEach((r, j) => {
+                    completed += 1;
+                    if (r.status === "fulfilled") {
+                        setPrompts((prev) => [...prev, ...r.value]);
+                    } else {
+                        failed += 1;
+                        console.error(`Activity ${slice[j]} failed:`, r.reason);
+                    }
+                });
+                setGenProgress({ current: completed, total: activityIds.length, currentLabel: "" });
+            }
         } catch (e) {
-            console.error(e);
+            console.error("Unexpected error in generation loop:", e);
+        }
+
+        setGenProgress({ current: 0, total: 0, currentLabel: "" });
+
+        if (failed > 0 && completed > failed) {
+            toast.warning(t(lang, "error_partial").replace("{n}", failed).replace("{total}", activityIds.length));
+        } else if (failed === activityIds.length) {
             toast.error(t(lang, "error_generate"));
             setPhase("wizard");
-            setGenProgress({ current: 0, total: 0, currentLabel: "" });
+            return;
         }
+        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
     const renderStep = () => {

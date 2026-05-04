@@ -123,6 +123,7 @@ export const translations = {
         error_aspect_custom: "Please describe what you want to train.",
         error_activity: "Pick at least one activity (or describe your own).",
         error_generate: "Something went wrong while generating your prompts. Try again in a moment.",
+        error_partial: "{n} of {total} prompts failed. Showing what we got — you can retry the missing ones.",
     },
     uk: {
         brand: "AI Prompt Bank",
@@ -237,6 +238,7 @@ export const translations = {
         error_aspect_custom: "Опиши, що саме хочеш тренувати.",
         error_activity: "Обери хоча б одну активність (або опиши свою).",
         error_generate: "Щось пішло не так. Спробуй ще раз за мить.",
+        error_partial: "{n} з {total} промтів не згенерувались. Показуємо те, що вийшло — можеш повторити пізніше.",
     },
 };
 
