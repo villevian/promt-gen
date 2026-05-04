@@ -1,0 +1,51 @@
+{
+  "summary": "Completed backend + frontend testing of AI Prompt Bank (Claude Sonnet 4.5 + FastAPI + React). 7/9 backend tests passed, 2 failed due to 60s ingress timeout on multi-activity generation (server completes the work but ingress returns 502). Frontend full wizard flow (8 aspects -> topic -> level -> energy -> bloom -> activities -> results) works end-to-end; single-activity prompt generation with 3 variations renders correctly with EN/UK toggle.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/generate-prompts",
+        "issue": "When 2+ activities are submitted (e.g. ['roleplay','write_feedback'] or flashcards + custom_activity), the concurrent LLM calls take longer than the preview-ingress 60s timeout. Backend log shows the request eventually completes with 200 OK (both prompts generated), but client/ingress returns 502 'The preview environment is not responding'. Single-activity requests (~30-55s) work fine. Root cause: two parallel Claude Sonnet 4.5 calls occasionally exceed 60s. Mitigation options: (a) stream/chunked response, (b) poll-based async job endpoint, (c) request ingress timeout increase, (d) run requests sequentially only when needed and surface partial results.",
+        "priority": "HIGH"
+      }
+    ],
+    "minor": []
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [
+      {
+        "flow": "Build prompts with multiple activities",
+        "issue": "Same 502 ingress timeout will affect end-users who select 2+ activities in Step 5. Frontend has no retry / graceful error UI for 502.",
+        "affected_selectors": ["[data-testid=\"loading-view\"]", "[data-testid=\"results-view\"]"]
+      }
+    ],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "Fix multi-activity timeout: reduce per-activity latency (shorter system prompt / max_tokens cap) OR switch to streaming / polling / SSE so response completes under the 60s ingress limit.",
+    "Add error state UI in frontend for 502/timeout from /api/generate-prompts with retry button and user-friendly message.",
+    "Consider adding request-level timeout + progressive results (emit prompts as each activity completes)."
+  ],
+  "critical_code_review_comments": [
+    "server.py: asyncio.gather fails fast — if one activity LLM call raises, all other already-completed results are discarded. Consider asyncio.gather(return_exceptions=True) + partial success response.",
+    "server.py: extract_json with json.loads can still throw for any malformed LLM output; currently wrapped in try/except and surfaced as 502 which is correct, but no retry on parse failure.",
+    "server.py: CORS middleware added AFTER app.include_router — functional but convention is to add middleware first.",
+    "server.py: raw[:500] in logging can fail if raw is not a str (already handled with isinstance, good).",
+    "No unit tests for pick_methodology() mapping — worth adding for regression safety.",
+    "Frontend: no visible timeout / abort handling on axios call; user could be stuck on loading indefinitely if backend hangs."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (created)"
+  ],
+  "success_rate": {"backend": "78% (7/9 pytest; 2 failures are environment/ingress-timeout related, not logic)", "frontend": "100% of tested flows"},
+  "test_credentials": "N/A — app has no auth",
+  "seed_data_creation": "None — app has no persistence",
+  "retest_needed": true,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Single-activity generate-prompts works reliably. Multi-activity (>=2) is blocked by ingress 60s timeout — confirm backend logs show 200 OK even when client got 502. When re-testing, use timeout=120 in requests but still expect 502 from ingress; need main agent to reduce LLM latency or change transport. Frontend wizard data-testids are: intro-start-btn, wizard-next, wizard-back, aspect-card-{id}, topic-input, diagnostic-{id}, problem-input, level-{id}, energy-{id}, bloom-{stage}, activity-{id}, custom-activity-input, loading-view, results-view, prompt-card-{i}, variation-main/easier/harder, copy-full, results-start-over, lang-en, lang-uk. UK language toggle fully translates UI. Backend tested endpoints: GET /api/ returns model claude-sonnet-4-5-20250929 (PASS); empty topic -> 400 (PASS); no activities -> 400 (PASS); vocabulary+flashcards single activity -> 3 variations with non-empty before/during/after + Lexical methodology (PASS); language=uk (PASS); grammar+claude_chat -> tool=claude + Focus on Form (PASS); writing+write_feedback -> Output/Reformulation (PASS).",
+  "rca of the issue": "Bug: POST /api/generate-prompts returns 502 for multi-activity requests. Reproduction: curl -X POST {BASE}/api/generate-prompts with activities=['roleplay','write_feedback'] and any valid context. RCA: server.py runs asyncio.gather on N parallel LLM calls (~30-55s each), but the preview Kubernetes ingress has a ~60s request timeout. Single-activity ~30-55s just barely fits; two concurrent calls still complete ~60-70s server-side and ingress returns 502 before FastAPI can flush the response. Backend logs (/var/log/supervisor/backend.out.log) confirm 200 OK is emitted by uvicorn after the 502 reaches the client. Mitigation: (1) reduce Claude output budget per call; (2) return streaming/NDJSON so first byte arrives <60s; (3) add /api/generate-prompts/start returning job_id and /api/generate-prompts/{job_id} poll endpoint; (4) generate activities sequentially and stream via SSE/WebSocket so the TCP connection stays alive with data chunks."
+}
