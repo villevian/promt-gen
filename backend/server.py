@@ -49,9 +49,9 @@ class GeneratePromptsRequest(BaseModel):
 
 class PromptVariation(BaseModel):
     label: str
-    before: str
-    during: str
-    after: str
+    before: str = ""
+    during: str = ""
+    after: str = ""
 
 
 class GeneratedPrompt(BaseModel):
@@ -130,7 +130,14 @@ OUTPUT — ONLY valid JSON, no markdown fences, no commentary:
     {"label":"EASIER","before":"...","during":"...","after":"..."},
     {"label":"HARDER","before":"...","during":"...","after":"..."}
   ]
-}"""
+}
+
+CRITICAL JSON RULES (your output MUST pass JSON.parse on the FIRST attempt):
+- Inside every string value, escape every double quote as \\" (backslash-quote).
+- Inside every string value, replace every real newline with the two characters \\n (backslash-n) — do NOT output raw line breaks inside strings.
+- Do not include backticks, markdown fences, or commentary outside the JSON object.
+- If you need to include quoted speech or examples, wrap them in single quotes or escape them.
+- EVERY variation object MUST have all four keys: label, before, during, after. Never skip "after" — even for the EASIER variation."""
 
 
 def build_user_prompt(req: GeneratePromptsRequest, activity_id: str, methodology: str) -> str:
@@ -197,7 +204,45 @@ def extract_json(text: str) -> dict:
     end = text.rfind("}")
     if start != -1 and end != -1 and end > start:
         text = text[start:end + 1]
-    return json.loads(text)
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        # Tolerant pass: fix common LLM mistakes — raw newlines inside strings
+        # and occasional unescaped double-quotes mid-string.
+        repaired = _repair_json_strings(text)
+        return json.loads(repaired)
+
+
+def _repair_json_strings(text: str) -> str:
+    """Replace raw newlines/tabs inside JSON string literals with their escape sequences."""
+    out = []
+    in_string = False
+    escape = False
+    for ch in text:
+        if escape:
+            out.append(ch)
+            escape = False
+            continue
+        if ch == "\\":
+            out.append(ch)
+            escape = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            out.append(ch)
+            continue
+        if in_string:
+            if ch == "\n":
+                out.append("\\n")
+                continue
+            if ch == "\r":
+                out.append("\\r")
+                continue
+            if ch == "\t":
+                out.append("\\t")
+                continue
+        out.append(ch)
+    return "".join(out)
 
 
 async def generate_for_activity(req: GeneratePromptsRequest, activity_id: str) -> GeneratedPrompt:
@@ -220,22 +265,40 @@ async def generate_for_activity(req: GeneratePromptsRequest, activity_id: str) -
 
     user_msg = UserMessage(text=build_user_prompt(req, activity_id, methodology))
 
-    try:
-        raw = await chat.send_message(user_msg)
-    except Exception as e:
-        logging.exception("LLM call failed")
-        raise HTTPException(status_code=502, detail=f"LLM call failed: {e}")
+    # One-shot retry: Haiku can emit malformed JSON or drop fields on long prep articles.
+    raw = None
+    variations = []
+    prep = ""
+    last_err = None
+    for attempt in range(2):
+        try:
+            raw = await chat.send_message(user_msg)
+        except Exception as e:
+            logging.exception("LLM call failed")
+            raise HTTPException(status_code=502, detail=f"LLM call failed: {e}")
 
-    try:
-        parsed = extract_json(raw if isinstance(raw, str) else str(raw))
-        variations_raw = parsed.get("variations") or []
-        variations = [PromptVariation(**v) for v in variations_raw]
-        prep = parsed.get("preparation_prompt") or ""
-        if not variations:
-            raise ValueError("no variations")
-    except Exception as e:
-        logging.error(f"Parse failed: {e}; raw was: {str(raw)[:500]}")
-        raise HTTPException(status_code=502, detail=f"Could not parse LLM output: {e}")
+        try:
+            parsed = extract_json(raw if isinstance(raw, str) else str(raw))
+            variations_raw = parsed.get("variations") or []
+            variations = [PromptVariation(**v) for v in variations_raw]
+            prep = parsed.get("preparation_prompt") or ""
+            # All three variations must have non-empty before/during/after
+            complete = (
+                len(variations) >= 1
+                and all(v.before.strip() and v.during.strip() and v.after.strip() for v in variations)
+            )
+            if complete:
+                break
+            last_err = ValueError(f"Incomplete variations — attempt {attempt + 1}")
+            logging.warning(str(last_err))
+        except Exception as e:
+            last_err = e
+            logging.warning(f"Parse attempt {attempt + 1} failed: {e}")
+            continue
+
+    if not variations:
+        logging.error(f"Final parse failure: {last_err}; raw={str(raw)[:500]}")
+        raise HTTPException(status_code=502, detail=f"Could not parse LLM output: {last_err}")
 
     return GeneratedPrompt(
         id=str(uuid.uuid4()),
