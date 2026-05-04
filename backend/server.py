@@ -415,7 +415,11 @@ def _repair_json_strings(text: str) -> str:
     return "".join(out)
 
 
-async def generate_for_activity(req: GeneratePromptsRequest, activity_id: str) -> GeneratedPrompt:
+async def generate_for_activity(
+    req: GeneratePromptsRequest,
+    activity_id: str,
+    vocab_drill: Optional[dict] = None,
+) -> GeneratedPrompt:
     activity = ACTIVITY_REGISTRY.get(activity_id)
     is_custom = activity is None
     activity_label = activity["label"] if activity else (req.custom_activity or "Custom activity")
@@ -427,19 +431,9 @@ async def generate_for_activity(req: GeneratePromptsRequest, activity_id: str) -
     if not EMERGENT_LLM_KEY:
         raise HTTPException(status_code=500, detail="EMERGENT_LLM_KEY not configured")
 
-    # Vocabulary aspect gets a concrete drill from the activity bank for DURING.
-    vocab_activities = []
-    vocab_activity_name = None
-    if req.aspect == "vocabulary":
-        vocab_activities = pick_vocab_activities(
-            req.bloom_stage,
-            req.topic,
-            f"{activity_id}|{req.level}|{req.language}",
-            n=2,
-        )
-        if vocab_activities:
-            primary = vocab_activities[0]
-            vocab_activity_name = f'{primary["id"]} — {primary["name"]}'
+    # Vocabulary aspect: caller passes the exact drill to use for DURING.
+    vocab_activities = [vocab_drill] if vocab_drill else []
+    vocab_activity_name = f'{vocab_drill["id"]} — {vocab_drill["name"]}' if vocab_drill else None
 
     chat = LlmChat(
         api_key=EMERGENT_LLM_KEY,
@@ -519,7 +513,25 @@ async def generate_prompts(req: GeneratePromptsRequest):
     if not req.topic.strip():
         raise HTTPException(status_code=400, detail="Topic is required")
 
-    tasks = [generate_for_activity(req, aid) for aid in activity_ids]
+    # For vocabulary aspect, fan out: one card per activity × per picked drill (2 drills).
+    # Each drill becomes its own card so the student sees several concrete options.
+    tasks = []
+    if req.aspect == "vocabulary":
+        for aid in activity_ids:
+            drills = pick_vocab_activities(
+                req.bloom_stage,
+                req.topic,
+                f"{aid}|{req.level}|{req.language}",
+                n=2,
+            )
+            if drills:
+                for d in drills:
+                    tasks.append(generate_for_activity(req, aid, vocab_drill=d))
+            else:
+                tasks.append(generate_for_activity(req, aid))
+    else:
+        tasks = [generate_for_activity(req, aid) for aid in activity_ids]
+
     prompts = await asyncio.gather(*tasks)
     return GeneratePromptsResponse(prompts=prompts)
 

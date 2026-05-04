@@ -197,6 +197,10 @@ function App() {
             return [];
         };
 
+        // For vocabulary, backend returns 2 prompts per activity (two drills from the bank).
+        const promptsPerActivity = state.aspect === "vocabulary" ? 2 : 1;
+        const expectedPrompts = activityIds.length * promptsPerActivity;
+
         // Run in parallel chunks of 3 — keeps UX responsive while halving wall time on large batches.
         const CHUNK = 3;
         let completed = 0;
@@ -206,19 +210,19 @@ function App() {
         try {
             for (let i = 0; i < activityIds.length; i += CHUNK) {
                 const slice = activityIds.slice(i, i + CHUNK);
-                setGenProgress({ current: completed + 1, total: activityIds.length, currentLabel: slice.join(", ") });
+                setGenProgress({ current: completed + 1, total: expectedPrompts, currentLabel: slice.join(", ") });
                 // settle so partial successes are kept
                 const results = await Promise.allSettled(slice.map(fetchOne));
                 results.forEach((r, j) => {
-                    completed += 1;
                     if (r.status === "fulfilled") {
+                        completed += r.value.length;
                         setPrompts((prev) => [...prev, ...r.value]);
                     } else {
                         failed += 1;
                         console.error(`Activity ${slice[j]} failed:`, r.reason);
                     }
                 });
-                setGenProgress({ current: completed, total: activityIds.length, currentLabel: "" });
+                setGenProgress({ current: completed, total: expectedPrompts, currentLabel: "" });
             }
         } catch (e) {
             console.error("Unexpected error in generation loop:", e);
@@ -226,7 +230,7 @@ function App() {
 
         setGenProgress({ current: 0, total: 0, currentLabel: "" });
 
-        if (failed > 0 && completed > failed) {
+        if (failed > 0 && completed > 0) {
             toast.warning(t(lang, "error_partial").replace("{n}", failed).replace("{total}", activityIds.length));
         } else if (failed === activityIds.length) {
             toast.error(t(lang, "error_generate"));
