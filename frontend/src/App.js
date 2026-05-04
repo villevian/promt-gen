@@ -228,6 +228,8 @@ function App() {
             case 4:
                 return <BloomStep aspect={state.aspect} value={state.bloom} onChange={(v) => update({ bloom: v })} lang={lang} />;
             case 5:
+                return <MaterialStep value={state.material} onChange={(v) => update({ material: v })} lang={lang} />;
+            case 6:
                 return <ActivitiesStep
                     aspect={state.aspect} bloom={state.bloom}
                     selected={state.activities} toggle={toggleActivity}
