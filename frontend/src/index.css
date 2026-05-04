@@ -242,3 +242,34 @@
     from { opacity: 0; transform: translateY(8px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
+/* Print styles — for PDF export */
+@media print {
+    html, body {
+        background: #FFFFFF !important;
+        background-image: none !important;
+    }
+    body {
+        color: #000 !important;
+    }
+    header, footer, nav, .pb-button-primary, .pb-button-ghost,
+    [data-testid="app-header"], [data-testid="results-back"], [data-testid="results-start-over"],
+    [data-testid="results-progress"], [data-testid="results-print"] {
+        display: none !important;
+    }
+    .pb-glass, .pb-glass-strong, .pb-card {
+        background: #FFF !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        box-shadow: none !important;
+        border: 1px solid #CCC !important;
+        page-break-inside: avoid;
+    }
+    article[data-testid^="prompt-card-"] {
+        page-break-after: always;
+    }
+    .pb-prompt-block {
+        background: #F5F5F5 !important;
+        border: 1px solid #DDD !important;
+    }
+}

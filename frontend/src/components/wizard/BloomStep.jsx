@@ -17,7 +17,8 @@ export const BloomStep = ({ aspect, value, onChange, lang }) => {
                 {BLOOM_STAGES.map((stage, idx) => {
                     const selected = value === stage;
                     const label = labelMap[stage]?.[lang] || labelMap[stage]?.en || stage;
-                    const symptoms = BLOOM_SYMPTOMS[stage]?.[lang] || BLOOM_SYMPTOMS[stage]?.en || "";
+                    const aspectSymptoms = BLOOM_SYMPTOMS[aspect] || BLOOM_SYMPTOMS.custom;
+                    const symptoms = aspectSymptoms[stage]?.[lang] || aspectSymptoms[stage]?.en || "";
                     return (
                         <button
                             key={stage}

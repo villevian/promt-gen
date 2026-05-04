@@ -29,6 +29,7 @@ const INITIAL_STATE = {
     energy: null,
     bloom: null,
     material: null,
+    materialMode: "generate",
     activities: [],
     customActivity: "",
 };
@@ -98,10 +99,11 @@ function LoadingView({ lang }) {
 
 function App() {
     const [lang, setLang] = useState(() => localStorage.getItem("pb-lang") || "en");
-    const [phase, setPhase] = useState("intro"); // intro | wizard | loading | results
+    const [phase, setPhase] = useState("intro"); // intro | wizard | results
     const [step, setStep] = useState(0);
     const [state, setState] = useState(INITIAL_STATE);
     const [prompts, setPrompts] = useState([]);
+    const [genProgress, setGenProgress] = useState({ current: 0, total: 0, currentLabel: "" });
 
     useEffect(() => {
         localStorage.setItem("pb-lang", lang);
@@ -182,29 +184,45 @@ function App() {
 
     const generate = async () => {
         setPhase("loading");
+        setPrompts([]);
+        const activityIds = [...state.activities];
+        if (state.customActivity.trim()) activityIds.push("custom");
+
+        setGenProgress({ current: 0, total: activityIds.length, currentLabel: "" });
+
+        const basePayload = {
+            aspect: state.aspect,
+            aspect_custom: state.aspect === "custom" ? state.aspectCustom : null,
+            topic: state.topic,
+            prior_knowledge: state.prior,
+            problem_description: state.prior === "specific_problem" ? state.problem : null,
+            level: state.level,
+            energy: state.energy,
+            bloom_stage: state.bloom,
+            material_status: state.material || "have",
+            material_mode: state.materialMode || "generate",
+            custom_activity: state.customActivity || null,
+            language: lang,
+        };
+
         try {
-            const payload = {
-                aspect: state.aspect,
-                aspect_custom: state.aspect === "custom" ? state.aspectCustom : null,
-                topic: state.topic,
-                prior_knowledge: state.prior,
-                problem_description: state.prior === "specific_problem" ? state.problem : null,
-                level: state.level,
-                energy: state.energy,
-                bloom_stage: state.bloom,
-                material_status: state.material || "have",
-                activities: state.activities,
-                custom_activity: state.customActivity || null,
-                language: lang,
-            };
-            const res = await axios.post(`${API}/generate-prompts`, payload, { timeout: 90000 });
-            setPrompts(res.data.prompts);
+            // Progressive: generate one activity at a time so users see results flowing in.
             setPhase("results");
+            for (let i = 0; i < activityIds.length; i++) {
+                const aid = activityIds[i];
+                setGenProgress({ current: i + 1, total: activityIds.length, currentLabel: aid });
+                const payload = { ...basePayload, activities: aid === "custom" ? [] : [aid] };
+                const res = await axios.post(`${API}/generate-prompts`, payload, { timeout: 90000 });
+                const newPrompts = res.data.prompts || [];
+                setPrompts((prev) => [...prev, ...newPrompts]);
+            }
+            setGenProgress({ current: 0, total: 0, currentLabel: "" });
             window.scrollTo({ top: 0, behavior: "smooth" });
         } catch (e) {
             console.error(e);
             toast.error(t(lang, "error_generate"));
             setPhase("wizard");
+            setGenProgress({ current: 0, total: 0, currentLabel: "" });
         }
     };
 
@@ -228,7 +246,14 @@ function App() {
             case 4:
                 return <BloomStep aspect={state.aspect} value={state.bloom} onChange={(v) => update({ bloom: v })} lang={lang} />;
             case 5:
-                return <MaterialStep value={state.material} onChange={(v) => update({ material: v })} lang={lang} />;
+                return <MaterialStep
+                    value={state.material}
+                    onChange={(v) => update({ material: v })}
+                    mode={state.materialMode}
+                    onChangeMode={(v) => update({ materialMode: v })}
+                    level={state.level}
+                    lang={lang}
+                />;
             case 6:
                 return <ActivitiesStep
                     aspect={state.aspect} bloom={state.bloom}
@@ -271,14 +296,13 @@ function App() {
                 </>
             )}
 
-            {phase === "loading" && <LoadingView lang={lang} />}
-
             {phase === "results" && (
                 <ResultsView
                     prompts={prompts}
                     lang={lang}
                     onReset={reset}
                     onBack={back}
+                    progress={genProgress}
                 />
             )}
 

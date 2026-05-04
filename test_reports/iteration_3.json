@@ -1,0 +1,51 @@
+{
+  "summary": "Iteration 3 testing of AI Prompt Bank. Frontend passes nearly every spec — Bloom aspect-specific symptoms (Speaking/Writing/Vocabulary all verified), MaterialStep level gating (A2 → search button disabled with opacity 0.5 & cursor not-allowed; B2 → enabled), progressive generation (phase=results immediately, cards stream in 1-by-1, 'Generating' indicator visible), per-card How-to (mind_map shows the exact NotebookLM steps), per-card Share button, EN/UK how-to translation, results-print button, and the full E2E (speaking + B2 + need + search + mind_map + roleplay → 2 cards, NLM card has prep mentioning web search + 5 sources, roleplay card has no prep). Backend pytest: 7/8 pass. ONE CRITICAL BACKEND BUG: material_mode='generate' on flashcards reproducibly returns HTTP 502 'Could not parse LLM output' — Haiku is producing invalid JSON when asked to embed a 400–500-word article inside the preparation_prompt string (unescaped quotes/newlines). The 'search' mode works fine; only 'generate' is broken. This is a high-impact regression because 'generate' is the default mode AND the gateway for every level below B2.",
+  "backend_issues": {
+    "critical": [
+      {
+        "endpoint": "POST /api/generate-prompts",
+        "issue": "material_status='need' + material_mode='generate' + activities=['flashcards'] reproducibly returns 502 'Could not parse LLM output: Expecting , delimiter ...'. Two consecutive runs failed at different positions (line 2 col 952 and line 8 col 368), confirming Haiku is emitting invalid JSON when the preparation_prompt string contains a long generated article with unescaped quotes/newlines. material_mode='search' (which returns metadata, not a long article) works fine. Recommended fix: (a) tighten SYSTEM_PROMPT to require properly-escaped JSON strings and forbid raw newlines/quotes, OR (b) request the article body in a separate field outside JSON, OR (c) harden extract_json with json5/jsonrepair fallback, OR (d) one cheap retry on parse failure.",
+        "priority": "CRITICAL"
+      }
+    ],
+    "minor": [
+      {
+        "endpoint": "POST /api/generate-prompts",
+        "issue": "asyncio.gather without return_exceptions=True still drops all already-completed prompts if any one activity fails. Low-priority because frontend now sends one activity per request, but the backend still loops over activities itself."
+      }
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/pytest_results.xml"
+  ],
+  "action_items": [
+    "FIX backend JSON parse failure when material_mode='generate'. Easiest: in SYSTEM_PROMPT explicitly say 'Inside preparation_prompt, escape all double quotes as \\\" and replace newlines with \\n. Output MUST be parseable by JSON.parse on the first try.' Add a one-shot retry in generate_for_activity on json.JSONDecodeError — Haiku is ~5–10s so a retry is cheap (<20s p99).",
+    "Optionally, switch extract_json to a tolerant parser (json5 or json_repair) so malformed but recoverable outputs still succeed.",
+    "Use asyncio.gather(..., return_exceptions=True) and surface partial successes; currently a single bad activity discards the whole batch."
+  ],
+  "critical_code_review_comments": [
+    "server.py: Long-content JSON-in-JSON is fragile. Generating a 400–500-word article inside a JSON string is the exact pattern that breaks Anthropic outputs. Either move the article to a top-level field or instruct the model to return it via a tool call / structured output, not free-form JSON.",
+    "server.py: extract_json swallows nothing — any parse error becomes 502 with no retry. One retry on JSONDecodeError would fix most flakiness.",
+    "App.js: generate() now does N sequential axios POSTs (one per activity). Acceptable for UX, but if any single call fails the user is dumped back to the wizard with all earlier-generated prompts lost. Consider keeping prompts already received and showing a partial-failure toast instead of resetting phase to 'wizard'.",
+    "App.js: LoadingView component is still defined but unreachable (phase is set to 'results' immediately). Dead code — remove or wire to the empty-results state."
+  ],
+  "updated_files": [
+    "/app/backend/tests/backend_test.py (rewritten for iteration 3 — covers material_mode generate vs search, default material_mode, and length/keyword assertions on preparation_prompt)"
+  ],
+  "success_rate": {
+    "backend": "87% (7/8 pytest pass — only material_mode=generate prep test fails; cause: LLM JSON parse error)",
+    "frontend": "100% — all spec items passed (Bloom aspect symptoms, level gating, progressive generation, how-to in EN+UK, share + print buttons, full E2E)"
+  },
+  "test_credentials": "N/A — app has no auth",
+  "seed_data_creation": "None — app has no persistence",
+  "retest_needed": true,
+  "main_agent_can_self_test": false,
+  "context_for_next_testing_agent": "Frontend is solid on iteration 3 — all wizard steps, progressive results, share/print, EN+UK how-to, level-gated material-mode-search work end-to-end. The only remaining issue is server-side: material_mode='generate' returns 502 because Claude Haiku 4.5 emits a JSON object whose preparation_prompt string contains a 400–500-word article with unescaped quotes, breaking json.loads. Reproduction (via pytest): test_material_need_generate_prep_is_long_article in /app/backend/tests/backend_test.py — fails 2/2 attempts at different char offsets. material_mode='search' is unaffected and the rest of the API is healthy. After main agent fixes the parse issue, just rerun pytest; no UI retest needed unless preparation_prompt rendering changes.",
+  "rca of the issue": "Root cause: SYSTEM_PROMPT instructs the LLM to put a 400–500-word article INSIDE the preparation_prompt JSON string. Haiku regularly outputs raw newlines and unescaped double quotes in that long string (e.g. \"...the manager said \"we'll consider it\" and...\"). When the resulting text reaches extract_json → json.loads, it raises JSONDecodeError. The 'search' mode happens to produce shorter, list-style output that rarely contains raw quotes, so it doesn't trigger the bug. Fix options ranked by simplicity: (1) Add an explicit rule to SYSTEM_PROMPT: 'Inside any string value, escape \" as \\\" and replace newlines with \\n. The output must pass JSON.parse on the first attempt.' (2) Add a one-shot retry on json.JSONDecodeError in generate_for_activity. (3) Replace json.loads with json_repair.loads / json5.loads for tolerant parsing. (4) Move the long article out of JSON entirely — return preparation_prompt as a separate <prep>...</prep> tag the server extracts before JSON parsing. Combining (1)+(2) is the fastest, lowest-risk path."
+}

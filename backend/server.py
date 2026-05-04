@@ -41,6 +41,7 @@ class GeneratePromptsRequest(BaseModel):
     energy: str
     bloom_stage: str
     material_status: str = "have"        # 'have' or 'need'
+    material_mode: str = "generate"      # 'generate' or 'search'
     activities: List[str]
     custom_activity: Optional[str] = None
     language: str = "en"
@@ -111,11 +112,15 @@ Keep the three-section structure for every prompt:
   * tool in ('chatgpt_gemini', 'claude') → include "[Paste your phrases from NotebookLM here]" and "Use ONLY these phrases — do not invent new ones."
 - AFTER  → reflection 3-2-1 (3 new phrases, 2 I'll use, 1 question), self-rating 1–3, one phrase I'll use this week.
 
-Each section = 60–100 words, plain instruction text to the AI tool. Concrete, not abstract.
+Each section = 80–120 words, plain instruction text to the AI tool. Concrete, not abstract.
 
 Three variations: MAIN (standard), EASIER (more scaffolding, shorter, simpler), HARDER (open-ended, multi-step).
 
-Additionally, if the student has NO source material AND the activity tool is 'notebooklm', produce a PREPARATION PROMPT for ChatGPT/Claude/Gemini that asks that LLM to generate the source material (an article, dialogue, short text, etc.) on the topic at the right CEFR level, with target vocabulary/structures. The student will copy this material into NotebookLM before using the main prompt.
+PREPARATION PROMPT (when requested): detailed, self-contained prompt for ChatGPT/Claude/Gemini, 180–280 words.
+- If material_mode == 'generate':
+  The prep prompt instructs the LLM to WRITE a 400–500-word article OR dialogue OR case study in English on the topic, at the specified CEFR level. It must include: (a) 10–15 target words/phrases/collocations aligned with the Bloom stage and methodology, listed at the end as a glossary; (b) realistic business/professional context; (c) clear structure (intro / body / conclusion or speaker A/B turns); (d) natural tone — not textbook-style; (e) a final line asking the student to paste the full text into NotebookLM as a source.
+- If material_mode == 'search':
+  The prep prompt instructs ChatGPT or Gemini (WITH WEB SEARCH enabled) to SEARCH THE WEB and return 5 current real sources on the topic, mixed: 2 articles (HBR / The Economist / industry blogs / Medium), 2 podcasts or YouTube videos (with timestamps if possible), 1 academic or official source. For each source: title, URL, author/publisher, estimated CEFR level, 2-sentence relevance summary, and "why this for your Bloom stage". End by telling the student to pick ONE source, paste the article text (or transcript) into NotebookLM as a source, and then use the main learning prompt.
 
 OUTPUT — ONLY valid JSON, no markdown fences, no commentary:
 {
@@ -156,6 +161,13 @@ def build_user_prompt(req: GeneratePromptsRequest, activity_id: str, methodology
     }
 
     needs_prep = req.material_status == "need" and tool == "notebooklm"
+    mode_line = ""
+    if needs_prep:
+        mode_line = (
+            "material_mode='search' — the prep prompt must tell ChatGPT/Gemini (with web search enabled) to RETURN 5 REAL ONLINE SOURCES (articles + podcasts/videos + 1 academic), with URLs and summaries."
+            if req.material_mode == "search"
+            else "material_mode='generate' — the prep prompt must instruct the LLM to WRITE a 400–500-word article/dialogue/case study on the topic at the specified level, with a 10–15-word target glossary."
+        )
 
     return f"""Generate the prompts for ONE activity.
 
@@ -169,8 +181,8 @@ CONTEXT:
 - Methodology to apply (hidden from student): {methodology}
 - Activity: {activity_label}
 - Tool: {tool}
-- Has own source material: {"NO — the student does NOT have source material" if needs_prep else ("YES" if tool == "notebooklm" else "N/A")}
-- Needs a preparation prompt: {"YES — include a preparation_prompt for ChatGPT/Claude/Gemini that generates an article/dialogue/text on the topic at " + req.level + " level, with target vocabulary/structures aligned to the Bloom stage and methodology above. Instruct the student to paste it into NotebookLM as a source." if needs_prep else "NO — return empty string for preparation_prompt"}
+- Has own source material: {"NO — student does NOT have source material" if needs_prep else ("YES" if tool == "notebooklm" else "N/A")}
+- Needs a preparation prompt: {"YES. " + mode_line if needs_prep else "NO — return empty string for preparation_prompt"}
 - UI language for meta text: {req.language}
 - Custom activity description (if any): {req.custom_activity or '(none)'}
 

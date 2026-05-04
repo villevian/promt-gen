@@ -227,31 +227,173 @@ export const ACTIVITIES = [
     },
 ];
 
-// Student-voice problems for each Bloom stage — recognisable without knowing the taxonomy.
+// Student-voice problems per Bloom stage, adapted per aspect.
+// Recognisable without knowing the taxonomy.
 export const BLOOM_SYMPTOMS = {
-    remember: {
-        en: "\"I haven't met this topic yet.\" · \"I want to see and hear what it looks like first.\"",
-        uk: "«ще не знайомий з темою» · «хочу спершу побачити й почути, як це звучить»",
+    vocabulary: {
+        remember:         { en: "\"I haven't seen these words yet.\" · \"Show me what the vocabulary looks like in real sentences.\"",
+                            uk: "«ще не стикався з цими словами» · «покажіть лексику в реальних реченнях»" },
+        understand:       { en: "\"I see the words but don't know when to use them.\" · \"The dictionary says one thing, natives say another.\"",
+                            uk: "«бачу слова, але не знаю, коли їх вживати» · «у словнику одне, а носії кажуть інакше»" },
+        apply_controlled: { en: "\"I can use them in gap-fill exercises but not in free speech.\" · \"I need phrases on my screen when I speak.\"",
+                            uk: "«справляюсь у вправах з пропусками, але не в мовленні» · «мені потрібні фрази перед очима»" },
+        apply_free:       { en: "\"I know the words but I can't speak.\" · \"They're passive — I recognise but don't produce.\"",
+                            uk: "«знаю слова, але не можу говорити» · «вони пасивні — впізнаю, але не вживаю»" },
+        evaluate:         { en: "\"I keep forgetting.\" · \"I mix similar words up (make/do, say/tell).\"",
+                            uk: "«постійно забуваю» · «плутаю схожі слова (make/do, say/tell)»" },
+        create:           { en: "\"I want to use these phrases in tomorrow's meeting / email.\" · \"Ready to stop translating from my L1.\"",
+                            uk: "«хочу вжити ці фрази завтра на зустрічі / у листі» · «готовий перестати перекладати з рідної»" },
     },
-    understand: {
-        en: "\"I see the words but don't know when to use them.\" · \"I get the rule but the logic isn't clear.\"",
-        uk: "«бачу слова, але не знаю, коли їх вживати» · «правило знаю, але логіка незрозуміла»",
+    listening: {
+        remember:         { en: "\"Everything sounds like one word.\" · \"I can't catch where sentences start and end.\"",
+                            uk: "«усе звучить як одне слово» · «не чую, де закінчується одне речення й починається інше»" },
+        understand:       { en: "\"I get single words but miss the meaning.\" · \"I understand written but not spoken English.\"",
+                            uk: "«ловлю окремі слова, але не розумію сенс» · «писане розумію, розмовне — ні»" },
+        apply_controlled: { en: "\"I need subtitles to follow.\" · \"If I re-listen 2–3 times I get it.\"",
+                            uk: "«без субтитрів не встигаю» · «з 2–3 прослуховувань розумію»" },
+        apply_free:       { en: "\"Natives speak too fast for me.\" · \"I zone out after 30 seconds.\"",
+                            uk: "«носії говорять надто швидко» · «через 30 секунд губуся»" },
+        evaluate:         { en: "\"I miss the nuance — sarcasm, hedging, tone.\" · \"I think I understood, but I missed the main point.\"",
+                            uk: "«не ловлю нюанс — сарказм, обережність, тон» · «думав, що зрозумів, але пропустив головне»" },
+        create:           { en: "\"I want to follow a podcast / meeting live, no prep.\" · \"Ready to react in real conversations.\"",
+                            uk: "«хочу слухати подкаст / зустріч наживо, без підготовки» · «готовий реагувати в реальних розмовах»" },
     },
-    apply_controlled: {
-        en: "\"I can do it with prompts but freeze without a template.\" · \"I forget without support.\"",
-        uk: "«можу за шаблоном, але без нього губуся» · «без підказки забуваю»",
+    reading: {
+        remember:         { en: "\"I don't know the vocabulary in this text yet.\" · \"I look up every second word.\"",
+                            uk: "«ще не знаю лексику цього тексту» · «заглядаю у словник через слово»" },
+        understand:       { en: "\"I read each word but miss the argument.\" · \"I can translate it but can't summarise it.\"",
+                            uk: "«читаю слово за словом, але не схоплюю думку» · «можу перекласти, але не можу переказати»" },
+        apply_controlled: { en: "\"I can answer comprehension questions when someone asks.\" · \"I need a glossary beside the text.\"",
+                            uk: "«відповідаю на питання, коли хтось питає» · «потрібен глосарій поряд»" },
+        apply_free:       { en: "\"I only read Ukrainian news — English feels too slow.\" · \"I avoid English articles.\"",
+                            uk: "«читаю новини тільки українською — англійською занадто повільно» · «уникаю англомовних статей»" },
+        evaluate:         { en: "\"I miss bias, irony, subtext.\" · \"I re-read and find I misunderstood something obvious.\"",
+                            uk: "«пропускаю упередженість, іронію, підтекст» · «перечитую і бачу, що зрозумів неправильно очевидне»" },
+        create:           { en: "\"I want to read this article to give my team insights tomorrow.\" · \"Ready to work from English sources daily.\"",
+                            uk: "«хочу прочитати статтю, щоб завтра розказати команді» · «готовий щодня працювати з англомовними джерелами»" },
     },
-    apply_free: {
-        en: "\"I know the words but I can't speak.\" · \"Need to move from theory to actual use.\"",
-        uk: "«знаю слова, але не можу говорити» · «треба перейти від теорії до практики»",
+    speaking: {
+        remember:         { en: "\"I freeze — I don't know the phrases yet.\" · \"I want to hear the phrases first.\"",
+                            uk: "«ступор — ще не знаю фраз» · «хочу спочатку почути фрази»" },
+        understand:       { en: "\"I know the words but my sentences sound weird.\" · \"I can't tell when to be formal vs casual.\"",
+                            uk: "«слова знаю, але речення звучать дивно» · «не розумію, коли бути формальним, а коли ні»" },
+        apply_controlled: { en: "\"I speak well when I have a script.\" · \"I need the phrases on a sticky note in front of me.\"",
+                            uk: "«зі скриптом — нормально» · «потрібні фрази на стікері»" },
+        apply_free:       { en: "\"I know the words but I can't speak.\" · \"I translate in my head — it's slow and clunky.\"",
+                            uk: "«знаю слова, але не можу говорити» · «перекладаю в голові — повільно і громіздко»" },
+        evaluate:         { en: "\"I say it but it sounds off.\" · \"Natives repeat back my sentence differently — what did I do wrong?\"",
+                            uk: "«говорю, а звучить не так» · «носій повторює моє речення по-іншому — що я зробив не так?»" },
+        create:           { en: "\"I want to run tomorrow's client call in English.\" · \"Ready to present without reading a script.\"",
+                            uk: "«хочу провести завтрашній дзвінок з клієнтом англійською» · «готовий презентувати без скрипту»" },
     },
-    evaluate: {
-        en: "\"I keep forgetting.\" · \"I don't notice my own mistakes.\" · \"Something sounds off but I can't tell what.\"",
-        uk: "«постійно забуваю» · «не помічаю своїх помилок» · «щось звучить не так, але не знаю що»",
+    writing: {
+        remember:         { en: "\"I don't know how this type of email/document is structured.\" · \"Show me examples first.\"",
+                            uk: "«не знаю, як структурується такий лист / документ» · «спершу покажіть приклади»" },
+        understand:       { en: "\"I understand the parts but don't know the tone.\" · \"Formal vs. friendly — I can't find the balance.\"",
+                            uk: "«розумію структуру, але не тон» · «формально vs. дружньо — не можу зловити баланс»" },
+        apply_controlled: { en: "\"Give me a template and I'll write.\" · \"Without a template my drafts are rambling.\"",
+                            uk: "«дайте шаблон — напишу» · «без шаблону мої чернетки розтягнуті»" },
+        apply_free:       { en: "\"I can write but it feels stiff.\" · \"My English emails sound robotic.\"",
+                            uk: "«пишу, але виходить сухо» · «мої англійські листи звучать як робот»" },
+        evaluate:         { en: "\"I don't see my own errors.\" · \"Grammarly fixes it but I don't know WHY.\"",
+                            uk: "«не бачу власних помилок» · «Grammarly виправляє, але не знаю ЧОМУ»" },
+        create:           { en: "\"I want to send this escalation email tomorrow.\" · \"Ready to write without drafting in Ukrainian first.\"",
+                            uk: "«хочу надіслати цей ескалаційний лист завтра» · «готовий писати одразу англійською, без чернетки українською»" },
     },
-    create: {
-        en: "\"I want to use it in a real meeting/email tomorrow.\" · \"Ready for the real situation.\"",
-        uk: "«хочу використати в реальній зустрічі/листі завтра» · «готовий до справжньої ситуації»",
+    grammar: {
+        remember:         { en: "\"I've never seen this structure.\" · \"I want to see it in sentences first.\"",
+                            uk: "«ніколи не бачив цієї структури» · «хочу побачити її в реченнях»" },
+        understand:       { en: "\"I know the rule but don't feel when to use it.\" · \"Present Perfect vs Past Simple — when is which?\"",
+                            uk: "«правило знаю, але не відчуваю, коли вживати» · «Present Perfect vs Past Simple — коли яке?»" },
+        apply_controlled: { en: "\"I can do fill-in-the-blank exercises.\" · \"I get it right in drills but fail in conversation.\"",
+                            uk: "«вправи з пропусками роблю» · «правильно у дрилах, але провалююсь у розмові»" },
+        apply_free:       { en: "\"I know the rules but I break them when I speak.\" · \"I freeze trying to pick the right tense.\"",
+                            uk: "«знаю правила, але ламаю їх у мовленні» · «зупиняюсь, обираючи правильний час»" },
+        evaluate:         { en: "\"I don't notice my own mistakes.\" · \"Someone corrects me and I see it — but only then.\"",
+                            uk: "«не помічаю власних помилок» · «хтось виправляє — і лише тоді бачу»" },
+        create:           { en: "\"I want to write/speak tomorrow without second-guessing the tense.\" · \"Ready for this structure to be automatic.\"",
+                            uk: "«хочу писати / говорити завтра без сумнівів щодо часу» · «готовий, щоб ця структура стала автоматичною»" },
+    },
+    translation: {
+        remember:         { en: "\"I don't know the English equivalent of many Ukrainian words.\" · \"Show me the pairs first.\"",
+                            uk: "«не знаю англійських відповідників багатьом українським словам» · «спершу покажіть пари»" },
+        understand:       { en: "\"Word-for-word translation sounds unnatural.\" · \"I don't understand WHY the English version is different.\"",
+                            uk: "«дослівний переклад звучить неприродно» · «не розумію, ЧОМУ англійська версія інша»" },
+        apply_controlled: { en: "\"Give me phrases and I'll translate them.\" · \"I need context to know which translation to pick.\"",
+                            uk: "«дайте фрази — перекладу» · «потрібен контекст, щоб обрати правильний варіант»" },
+        apply_free:       { en: "\"I translate in my head and lose the meaning.\" · \"My translations sound like Ukrainian with English words.\"",
+                            uk: "«перекладаю в голові і втрачаю сенс» · «мої переклади звучать як українська англійськими словами»" },
+        evaluate:         { en: "\"I fall for false friends.\" · \"I translate idioms literally and it sounds absurd.\"",
+                            uk: "«попадаюсь на хибні друзі» · «перекладаю ідіоми дослівно і звучить безглуздо»" },
+        create:           { en: "\"I want to switch between Ukrainian and English in the same meeting.\" · \"Ready to interpret for a colleague.\"",
+                            uk: "«хочу перемикатись між мовами на одній зустрічі» · «готовий перекласти колезі»" },
+    },
+    custom: {
+        remember:         { en: "\"I'm new to this — show me the basics.\"",
+                            uk: "«я новачок у цьому — покажіть основи»" },
+        understand:       { en: "\"I see it but the logic isn't clear.\"",
+                            uk: "«бачу, але логіка незрозуміла»" },
+        apply_controlled: { en: "\"I can do it with support but not alone.\"",
+                            uk: "«можу з підтримкою, сам — ні»" },
+        apply_free:       { en: "\"I need to move from theory to actual use.\"",
+                            uk: "«треба перейти від теорії до практики»" },
+        evaluate:         { en: "\"I keep making the same mistakes without noticing.\"",
+                            uk: "«роблю ті самі помилки, не помічаючи»" },
+        create:           { en: "\"I want to use it in a real situation this week.\"",
+                            uk: "«хочу використати в реальній ситуації цього тижня»" },
+    },
+};
+
+// Step-by-step paste instructions per activity, in each language.
+// Rendered as a numbered list in the prompt card.
+export const PASTE_STEPS = {
+    audio_retelling: {
+        en: ["Open notebooklm.google.com and sign in with Google.", "Create a new notebook (or open your existing one).", "Add at least one source (the material you used, or the one generated by the prep-prompt).", "Click the chat field at the bottom and paste the prompt.", "When the chat responds, go to the Studio panel → click \"Audio Overview\" → Generate.", "Listen to the podcast, then follow the After-section reflection."],
+        uk: ["Відкрий notebooklm.google.com і увійди через Google.", "Створи новий notebook (або відкрий існуючий).", "Додай хоча б одне джерело (твій матеріал або той, що згенерував prep-промт).", "Натисни на поле чату внизу і встав промт.", "Коли чат відповість, перейди в панель Studio → «Audio Overview» → Generate.", "Послухай подкаст, потім виконай рефлексію з After-секції."],
+    },
+    video_retelling: {
+        en: ["Open NotebookLM, create or open a notebook.", "Add your source(s).", "Paste the prompt into the chat.", "After the chat responds, open Studio → \"Video Overview\" → Generate.", "Watch without subtitles first, then with.", "Do the After-reflection."],
+        uk: ["Відкрий NotebookLM, створи або відкрий notebook.", "Додай джерело(а).", "Встав промт у чат.", "Після відповіді чату відкрий Studio → «Video Overview» → Generate.", "Дивись спочатку без субтитрів, потім із.", "Виконай After-рефлексію."],
+    },
+    mind_map: {
+        en: ["Open NotebookLM, create or open a notebook.", "Add your source(s).", "Paste the prompt into the chat.", "Open Studio panel → click \"Mind Map\" → Generate.", "Click each node to expand — use those branches as speaking prompts."],
+        uk: ["Відкрий NotebookLM, створи або відкрий notebook.", "Додай джерело(а).", "Встав промт у чат.", "Відкрий Studio → «Mind Map» → Generate.", "Натискай на вузли, щоб розгорнути — використовуй гілки як теми для говоріння."],
+    },
+    flashcards: {
+        en: ["Open NotebookLM, create or open a notebook.", "Add your source(s).", "Paste the prompt into the chat — specify the format you want (term ↔ translation, term ↔ definition, or sentence with a gap).", "Click Studio → \"Flashcards\" → Generate.", "Study with active recall: L1 front → try English → flip."],
+        uk: ["Відкрий NotebookLM, створи або відкрий notebook.", "Додай джерело(а).", "Встав промт у чат — вкажи потрібний формат (слово ↔ переклад, слово ↔ означення, речення з пропуском).", "Натисни Studio → «Flashcards» → Generate.", "Вчи з активним відтворенням: українська спереду → спробуй англійську → переверни."],
+    },
+    test: {
+        en: ["Open NotebookLM, create or open a notebook.", "Add your source(s).", "Paste the prompt into the chat.", "Click Studio → \"Quiz\" → Generate.", "Take the quiz without notes.", "Review wrong answers as your gap list."],
+        uk: ["Відкрий NotebookLM, створи або відкрий notebook.", "Додай джерело(а).", "Встав промт у чат.", "Натисни Studio → «Quiz» → Generate.", "Пиши тест без нотаток.", "Переглянь помилки — це твій список прогалин."],
+    },
+    infographic: {
+        en: ["Open NotebookLM Studio → select \"Infographic\".", "In the description box, paste the prompt as your instructions.", "Generate. Download the PNG/PDF.", "Pin it to your desktop as a quick-reference before meetings."],
+        uk: ["Відкрий NotebookLM Studio → вибери «Infographic».", "У полі опису встав промт як інструкцію.", "Згенеруй. Завантаж PNG/PDF.", "Закріпи на робочому столі як швидкий нагадник перед зустрічами."],
+    },
+    study_guide: {
+        en: ["Open NotebookLM Studio → Reports → \"Custom Format\".", "Paste the prompt as the format instructions.", "Click Generate. Save as PDF or Markdown.", "Read-through, then close it and reproduce key phrases out loud."],
+        uk: ["Відкрий NotebookLM Studio → Reports → «Custom Format».", "Встав промт як інструкцію для формату.", "Натисни Generate. Збережи як PDF або Markdown.", "Прочитай, закрий і відтвори ключові фрази вголос."],
+    },
+    presentation: {
+        en: ["Open NotebookLM Studio → \"Presentation\".", "In the \"Extra instructions\" field, paste the prompt.", "Generate the slide deck.", "Rehearse presenting it aloud, record yourself, review."],
+        uk: ["Відкрий NotebookLM Studio → «Presentation».", "У полі «Extra instructions» встав промт.", "Згенеруй слайди.", "Тренуйся презентувати вголос, запиши себе, перевір."],
+    },
+    roleplay: {
+        en: ["Open chat.openai.com or gemini.google.com.", "Paste the entire prompt in the chat field.", "Where the prompt says \"[Paste your phrases here]\", paste phrases you collected from NotebookLM.", "Send. The AI will assume the role you specified.", "Respond in English — speak aloud if you can (voice mode)."],
+        uk: ["Відкрий chat.openai.com або gemini.google.com.", "Встав увесь промт у поле чату.", "Там, де сказано «[Paste your phrases here]», встав фрази з NotebookLM.", "Надішли. AI візьме на себе роль, яку ти вказав.", "Відповідай англійською — якщо можеш, говори вголос (voice mode)."],
+    },
+    speak_voice: {
+        en: ["ChatGPT: tap the voice-wave icon (mobile app or web). Gemini: open Gemini Live.", "Start the voice session.", "Paste the prompt into the pre-session text field, or read it aloud to Claude/ChatGPT first, then go voice.", "Speak. Ask the AI to gently correct pronunciation/grammar.", "Review the transcript afterwards for patterns."],
+        uk: ["ChatGPT: натисни іконку голосу (мобільний додаток або веб). Gemini: відкрий Gemini Live.", "Почни голосову сесію.", "Встав промт у текстове поле перед сесією, або прочитай його вголос ChatGPT/Claude, тоді переходь у голос.", "Говори. Попроси AI мʼяко виправляти вимову/граматику.", "Пізніше переглянь транскрипт — шукай патерни."],
+    },
+    write_feedback: {
+        en: ["Open ChatGPT or Gemini chat.", "Paste the prompt.", "Follow the Before-section: write your draft first.", "Send it to the AI with the During-section instruction to mark line-by-line corrections.", "Compare the AI's rewrite vs your draft and note 3 patterns."],
+        uk: ["Відкрий ChatGPT або Gemini.", "Встав промт.", "Виконай Before-секцію: спочатку напиши свою чернетку.", "Надішли AI разом з During-інструкцією про правки рядок-за-рядком.", "Порівняй свій варіант із переписаним і виділи 3 патерни."],
+    },
+    claude_chat: {
+        en: ["Open claude.ai and start a new chat.", "Paste the prompt.", "Work through Before → During → After in one thread — Claude keeps context.", "If you have phrases from NotebookLM, paste them when the prompt says so."],
+        uk: ["Відкрий claude.ai і почни новий чат.", "Встав промт.", "Пройди Before → During → After у одному треді — Claude тримає контекст.", "Якщо є фрази з NotebookLM, встав їх, коли промт це вкаже."],
     },
 };
 

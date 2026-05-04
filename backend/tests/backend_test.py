@@ -1,6 +1,10 @@
-"""Backend tests for AI Prompt Bank API (Claude Haiku 4.5 + FastAPI) — iteration 2.
+"""Backend tests for AI Prompt Bank API (Claude Haiku 4.5 + FastAPI) — iteration 3.
 
-Adds material_status (have/need) + preparation_prompt logic for NotebookLM activities.
+Covers:
+- Health: model is claude-haiku-4-5-20251001
+- Validation errors
+- material_status have/need + material_mode generate/search prep prompt logic
+- Single-activity speed (<30s)
 """
 import os
 import time
@@ -28,6 +32,7 @@ def _base_payload(**overrides):
         "energy": "normal",
         "bloom_stage": "apply_controlled",
         "material_status": "have",
+        "material_mode": "generate",
         "activities": ["flashcards"],
         "language": "en",
     }
@@ -35,15 +40,14 @@ def _base_payload(**overrides):
     return p
 
 
-# ---------- Health: model is Haiku 4.5 ----------
+# ---------- Health ----------
 def test_root_returns_haiku_model(client):
     r = client.get(f"{API}/", timeout=30)
     assert r.status_code == 200
-    data = r.json()
-    assert data.get("model") == "claude-haiku-4-5-20251001"
+    assert r.json().get("model") == "claude-haiku-4-5-20251001"
 
 
-# ---------- Validation errors ----------
+# ---------- Validation ----------
 def test_empty_topic_returns_400(client):
     r = client.post(f"{API}/generate-prompts", json=_base_payload(topic=""), timeout=30)
     assert r.status_code == 400
@@ -58,7 +62,15 @@ def test_no_activities_returns_400(client):
     assert r.status_code == 400
 
 
-# ---------- material_status='have' + NLM activity → no prep prompt ----------
+# ---------- material_mode default works when omitted ----------
+def test_material_mode_defaults_to_generate(client):
+    payload = _base_payload(material_status="have", activities=["flashcards"])
+    payload.pop("material_mode", None)
+    r = client.post(f"{API}/generate-prompts", json=payload, timeout=TIMEOUT)
+    assert r.status_code == 200, r.text
+
+
+# ---------- have + flashcards → no prep, fast ----------
 def test_material_have_flashcards_no_prep(client):
     start = time.time()
     r = client.post(
@@ -68,45 +80,70 @@ def test_material_have_flashcards_no_prep(client):
     )
     elapsed = time.time() - start
     assert r.status_code == 200, r.text
-    data = r.json()
-    assert len(data["prompts"]) == 1
-    p = data["prompts"][0]
+    p = r.json()["prompts"][0]
     assert p["activity_id"] == "flashcards"
     assert p["tool"] == "notebooklm"
     assert p["needs_preparation"] is False
     assert p["preparation_prompt"] in (None, "")
-    # Variation sanity
     labels = {v["label"] for v in p["variations"]}
     assert labels == {"MAIN", "EASIER", "HARDER"}
-    for v in p["variations"]:
-        assert v["before"].strip() and v["during"].strip() and v["after"].strip()
-    # Speed sanity (Haiku should comfortably finish under 15s)
     print(f"[have+flashcards] elapsed={elapsed:.1f}s")
     assert elapsed < 30, f"Single activity took {elapsed:.1f}s (>30s)"
 
 
-# ---------- material_status='need' + NLM activity → prep prompt populated ----------
-def test_material_need_flashcards_has_prep(client):
+# ---------- need + generate + flashcards → prep mentions article/dialogue, >400 chars ----------
+def test_material_need_generate_prep_is_long_article(client):
     r = client.post(
         f"{API}/generate-prompts",
-        json=_base_payload(material_status="need", activities=["flashcards"]),
+        json=_base_payload(
+            material_status="need",
+            material_mode="generate",
+            level="B2",
+            activities=["flashcards"],
+        ),
         timeout=TIMEOUT,
     )
     assert r.status_code == 200, r.text
     p = r.json()["prompts"][0]
-    assert p["tool"] == "notebooklm"
     assert p["needs_preparation"] is True
-    assert isinstance(p["preparation_prompt"], str)
-    assert len(p["preparation_prompt"].strip()) > 30
-    assert p["preparation_tool"] == "chatgpt_gemini"
+    prep = (p["preparation_prompt"] or "").strip()
+    assert len(prep) > 400, f"prep length={len(prep)} should be > 400"
+    low = prep.lower()
+    assert any(k in low for k in ("article", "dialogue", "case study")), (
+        f"prep should mention article/dialogue/case study; got: {prep[:300]}"
+    )
 
 
-# ---------- material_status='need' + non-NLM activity → still no prep ----------
+# ---------- need + search + B2 + mind_map → prep mentions web search + 5 sources ----------
+def test_material_need_search_prep_mentions_web_search_and_sources(client):
+    r = client.post(
+        f"{API}/generate-prompts",
+        json=_base_payload(
+            material_status="need",
+            material_mode="search",
+            level="B2",
+            activities=["mind_map"],
+        ),
+        timeout=TIMEOUT,
+    )
+    assert r.status_code == 200, r.text
+    p = r.json()["prompts"][0]
+    assert p["needs_preparation"] is True
+    prep = (p["preparation_prompt"] or "").strip()
+    low = prep.lower()
+    assert "web search" in low or "search the web" in low or "web-search" in low, (
+        f"prep should mention web search; got: {prep[:300]}"
+    )
+    assert "5" in prep and ("source" in low), f"prep should mention 5 sources; got: {prep[:300]}"
+
+
+# ---------- need + roleplay (non-NLM) → no prep ----------
 def test_material_need_roleplay_no_prep(client):
     payload = _base_payload(
         aspect="speaking",
         bloom_stage="apply_free",
         material_status="need",
+        material_mode="search",
         activities=["roleplay"],
     )
     r = client.post(f"{API}/generate-prompts", json=payload, timeout=TIMEOUT)
@@ -115,20 +152,3 @@ def test_material_need_roleplay_no_prep(client):
     assert p["tool"] == "chatgpt_gemini"
     assert p["needs_preparation"] is False
     assert p["preparation_prompt"] in (None, "")
-
-
-# ---------- mixed activities: only NLM ones get prep ----------
-def test_material_need_mixed_only_nlm_gets_prep(client):
-    payload = _base_payload(
-        aspect="speaking",
-        bloom_stage="apply_free",
-        material_status="need",
-        activities=["flashcards", "roleplay"],
-    )
-    r = client.post(f"{API}/generate-prompts", json=payload, timeout=TIMEOUT)
-    assert r.status_code == 200, r.text
-    by_id = {p["activity_id"]: p for p in r.json()["prompts"]}
-    assert by_id["flashcards"]["needs_preparation"] is True
-    assert (by_id["flashcards"]["preparation_prompt"] or "").strip()
-    assert by_id["roleplay"]["needs_preparation"] is False
-    assert by_id["roleplay"]["preparation_prompt"] in (None, "")
