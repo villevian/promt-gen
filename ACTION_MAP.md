@@ -50,11 +50,35 @@ No API calls in header.
 
 ## 3. Intro screen — `App.js → Intro()` (App.js:37-84)
 
+### 3.1 Interactive elements
+
 | Element | testid | User does | Triggers | Result |
 |---|---|---|---|---|
 | "Build a prompt →" CTA | `intro-start-btn` | Click | `onStart()` → `setPhase("wizard")` (App.js:306) | Renders `<ProgressIndicator />` + wizard step 0 (`AspectStep`). |
 
-The "Methodology" right-rail card is presentational, no interactions.
+### 3.2 Methodology card (right rail, App.js:62-80) — read-only legend
+
+The "Methodology" frosted-glass card shows the 10 pedagogical schools the generator silently applies. It has **no interactions** but is a contract with the rest of the system: every name listed here is referenced somewhere in the prompt-generation pipeline. Map of where each one fires:
+
+| Label on screen | Tag on screen | Where it actually runs | Trigger condition |
+|---|---|---|---|
+| Krashen | Input i+1 | `pick_methodology()` → `"Input-based (Krashen)"` (server.py:93) | `aspect=="vocabulary"` AND `bloom_stage` ∈ `remember/understand/apply_controlled-NO/evaluate` (i.e., when bloom is NOT in the productive set). Also referenced verbatim in the `SYSTEM_PROMPT` "stay at level" rules (server.py:115). |
+| Lewis | Lexical chunks | `pick_methodology()` → `"Lexical Approach (Lewis)"` (server.py:93) | `aspect=="vocabulary"` AND `bloom_stage` ∈ `apply_controlled, apply_free, create`. |
+| Long, Ellis | Focus on Form | `pick_methodology()` → `"Focus on Form (Long)"` (server.py:97) | `aspect=="grammar"`. |
+| Willis | CLT / TBLT | `pick_methodology()` → `"CLT Task-Based (Willis)"` (server.py:95) | `aspect=="speaking"`. |
+| Swain | Output | `pick_methodology()` → `"Output / Reformulation (Swain)"` (server.py:96) | `aspect=="writing"`. |
+| Ebbinghaus | Spaced repetition | UI surface in every prompt card → `<spaced-repetition>` checkboxes (PromptCard.jsx:239-258, testids `prompt-{i}-return-{tomorrow|day_3|day_7}`). Also referenced in `i18n.js → return_kicker / day_*` strings. | Always rendered on results cards. |
+| Hattie | Self-rating | Embedded into the `SYSTEM_PROMPT` rule for the AFTER section: *"reflection 3-2-1, self-rating 1–3, one phrase I'll use this week"* (server.py:127). | Every generated `variation.after` ⇒ surfaces in `<Section kind="after">` (PromptCard.jsx:235). |
+| Wiggins | Success criteria | Embedded into `SYSTEM_PROMPT` rule for the BEFORE section: *"schema activation (Ausubel), success criteria (Wiggins), confidence 1–3 (Hattie)"* (server.py:124). | Every generated `variation.before` ⇒ surfaces in `<Section kind="before">` (PromptCard.jsx:233). |
+| Bjork | Desirable difficulty | Implemented as the **EnergyStep** itself (`wizard/EnergyStep.jsx`, options `easy / normal / challenge`). Also literally cited to the user in the energy step caption (`i18n.step3_sub`: *"Honest answers produce better practice. Bjork called it desirable difficulty."*). The chosen `energy` is mapped to a difficulty hint in `energy_map` (server.py:171-175) and shipped into the user prompt sent to Claude. | Always — set in step 3, applied to every Claude call. |
+| Ausubel | Schema activation | Same `SYSTEM_PROMPT` BEFORE rule (server.py:124) + the `aspect=="reading"` branch of `pick_methodology` → `"Schema activation (Ausubel)"` (server.py:99). | Always (BEFORE section); explicitly when `aspect=="reading"`. |
+
+Two more methodologies are applied but **not surfaced** on the intro card:
+- **Listening — Extensive Input + Dictogloss** (server.py:98) when `aspect=="listening"`.
+- **Translation — Contrastive analysis** (server.py:100) when `aspect=="translation"`.
+- **Roediger — retrieval practice** is mentioned only in user-facing `wizardData.js → ACTIVITIES.test.howEn` ("retrieval practice — Roediger"), not in the backend logic.
+
+The `methodology` string returned per prompt is read on the frontend at `PromptCard.jsx:180` and rendered as a small mono-tag next to the tool badge.
 
 ---
 
