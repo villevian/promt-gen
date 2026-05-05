@@ -35,12 +35,39 @@ const buildFullPrompt = (variation, prep, roleContext) => {
 const useCopier = () => {
     const [copied, setCopied] = useState(false);
     const copy = async (text) => {
-        try {
-            await navigator.clipboard.writeText(text);
+        let ok = false;
+        // Modern path — works on https + outside iframes
+        if (navigator.clipboard && window.isSecureContext) {
+            try {
+                await navigator.clipboard.writeText(text);
+                ok = true;
+            } catch (e) {
+                console.warn("clipboard.writeText failed, falling back:", e);
+            }
+        }
+        // Fallback for iframes / non-secure / blocked permission contexts
+        if (!ok) {
+            try {
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                ta.setAttribute("readonly", "");
+                ta.style.position = "fixed";
+                ta.style.top = "0";
+                ta.style.left = "0";
+                ta.style.opacity = "0";
+                document.body.appendChild(ta);
+                ta.focus();
+                ta.select();
+                ta.setSelectionRange(0, text.length);
+                ok = document.execCommand("copy");
+                document.body.removeChild(ta);
+            } catch (e) {
+                console.error("execCommand copy failed:", e);
+            }
+        }
+        if (ok) {
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
-        } catch {
-            /* ignore */
         }
     };
     return [copied, copy];

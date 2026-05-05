@@ -9,7 +9,7 @@ const DIAGNOSTIC_OPTIONS = [
     { id: "specific_problem", key: "diag_specific",    glyph: "▲" },
 ];
 
-export const TopicStep = ({ aspect, topic, setTopic, prior, setPrior, problem, setProblem, aspectCustom, setAspectCustom, lang }) => {
+export const TopicStep = ({ aspect, topic, setTopic, contextMode, setContextMode, contextCustom, setContextCustom, prior, setPrior, problem, setProblem, aspectCustom, setAspectCustom, lang }) => {
     const placeholderObj = TOPIC_PLACEHOLDERS[aspect] || TOPIC_PLACEHOLDERS.custom;
     const placeholder = placeholderObj[lang] || placeholderObj.en;
 
@@ -46,6 +46,42 @@ export const TopicStep = ({ aspect, topic, setTopic, prior, setPrior, problem, s
                 data-testid="topic-input"
                 autoFocus
             />
+
+            {/* Context selector */}
+            <div className="mb-12">
+                <div className="pb-eyebrow mb-4">{t(lang, "context_kicker")}</div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="context-grid">
+                    <button
+                        onClick={() => setContextMode("general")}
+                        className={`pb-card text-left p-4 cursor-pointer ${contextMode === "general" ? "pb-card-selected" : ""}`}
+                        data-testid="context-general"
+                    >
+                        <div className="pb-serif text-lg text-[var(--pb-text)] mb-1">{t(lang, "context_general_title")}</div>
+                        <div className="text-[12px] text-[var(--pb-text-secondary)] leading-snug">{t(lang, "context_general_sub")}</div>
+                    </button>
+                    <button
+                        onClick={() => setContextMode("custom")}
+                        className={`pb-card text-left p-4 cursor-pointer ${contextMode === "custom" ? "pb-card-selected" : ""}`}
+                        data-testid="context-custom"
+                    >
+                        <div className="pb-serif text-lg text-[var(--pb-text)] mb-1">{t(lang, "context_custom_title")}</div>
+                        <div className="text-[12px] text-[var(--pb-text-secondary)] leading-snug">{t(lang, "context_custom_sub")}</div>
+                    </button>
+                </div>
+
+                {contextMode === "custom" && (
+                    <div className="mt-4 pb-step-enter">
+                        <textarea
+                            value={contextCustom}
+                            onChange={(e) => setContextCustom(e.target.value)}
+                            rows={2}
+                            placeholder={t(lang, "context_custom_ph")}
+                            className="w-full p-3 bg-white/60 backdrop-blur border border-[var(--pb-border)] focus:border-[var(--pb-text)] outline-none pb-sans text-sm text-[var(--pb-text)] transition-colors resize-none"
+                            data-testid="context-custom-input"
+                        />
+                    </div>
+                )}
+            </div>
 
             <div className="pb-eyebrow mb-4">{t(lang, "step1_diagnostic")}</div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="diagnostic-grid">

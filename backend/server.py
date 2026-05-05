@@ -35,6 +35,7 @@ class GeneratePromptsRequest(BaseModel):
     aspect: str
     aspect_custom: Optional[str] = None
     topic: str
+    context: Optional[str] = "general"   # 'general' or a free-text context (e.g. "I'm a doula")
     prior_knowledge: str
     problem_description: Optional[str] = None
     level: str
@@ -212,11 +213,13 @@ def pick_vocab_activities(bloom_stage: str, topic: str, seed_str: str, n: int = 
 def fill_vocab_variables(text: str, req) -> str:
     """Replace {CHUNK}, {L1}, {LEVEL}, {CONTEXT}, {NOUN}, {TEXT} with wizard values."""
     l1_map = {"en": "English", "uk": "Ukrainian"}
+    ctx_raw = (req.context or "general").strip()
+    context_value = ctx_raw if ctx_raw and ctx_raw.lower() != "general" else req.topic.strip()
     replacements = {
         "{CHUNK}":   req.topic.strip(),
         "{L1}":      l1_map.get(req.language, "the student's L1"),
         "{LEVEL}":   req.level,
-        "{CONTEXT}": req.topic.strip(),
+        "{CONTEXT}": context_value,
         "{NOUN}":    req.topic.strip(),
         "{TEXT}":    "[student's source material from NotebookLM]" if req.material_status == "have" else "[source material generated via the preparation prompt]",
     }
@@ -351,6 +354,7 @@ All variables ({{CHUNK}}, {{L1}}, {{LEVEL}}, {{CONTEXT}}, {{NOUN}}, {{TEXT}}) ha
 CONTEXT:
 - Aspect: {aspect_label}
 - Topic: {req.topic}
+- Student's domain context: {req.context if req.context and req.context.strip().lower() != 'general' else 'General — no specific professional/personal context. Pick neutral but relatable examples.'}
 - Prior knowledge: {prior_map.get(req.prior_knowledge, req.prior_knowledge)}
 - CEFR level: {req.level}
 - Energy today: {energy_map.get(req.energy, req.energy)}
@@ -363,6 +367,8 @@ CONTEXT:
 - UI language for meta text: {req.language}
 - Custom activity description (if any): {req.custom_activity or '(none)'}
 {vocab_block}
+IMPORTANT: when the student's domain context is specified (not 'General'), use it to colour every example, role_context profile, and task setting. Do NOT pretend the student is a generic office worker — use their actual domain.
+
 Output ONLY the JSON object matching the schema."""
 
 

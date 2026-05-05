@@ -10,6 +10,11 @@ const TOOL_BG = {
 
 export const ActivitiesStep = ({ aspect, bloom, selected, toggle, customActivity, setCustomActivity, lang }) => {
     const recommended = (RECOMMENDATIONS[aspect]?.[bloom]) || [];
+    // Sort: recommended first, then the rest in original order
+    const sortedActivities = [
+        ...ACTIVITIES.filter((a) => recommended.includes(a.id)),
+        ...ACTIVITIES.filter((a) => !recommended.includes(a.id)),
+    ];
 
     return (
         <div className="pb-step-enter">
@@ -27,7 +32,7 @@ export const ActivitiesStep = ({ aspect, bloom, selected, toggle, customActivity
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3" data-testid="activities-grid">
-                {ACTIVITIES.map((a) => {
+                {sortedActivities.map((a) => {
                     const isSelected = selected.includes(a.id);
                     const isRecommended = recommended.includes(a.id);
                     const palette = TOOL_BG[a.tool];
@@ -40,7 +45,17 @@ export const ActivitiesStep = ({ aspect, bloom, selected, toggle, customActivity
                             onClick={() => toggle(a.id)}
                             className={`pb-card relative text-left p-4 cursor-pointer flex items-start gap-3 ${isSelected ? "pb-card-selected" : ""} ${isRecommended ? "pb-recommended" : ""}`}
                             data-testid={`activity-${a.id}`}
+                            style={isRecommended ? { borderColor: "#059669", borderWidth: "2px", boxShadow: "0 0 0 4px rgba(5, 150, 105, 0.08)" } : undefined}
                         >
+                            {isRecommended && (
+                                <span
+                                    className="absolute -top-2.5 left-4 pb-mono text-[10px] uppercase tracking-widest px-2 py-0.5 flex items-center gap-1"
+                                    style={{ background: "#059669", color: "#FFFFFF", letterSpacing: "0.15em" }}
+                                    data-testid={`activity-${a.id}-recommended-badge`}
+                                >
+                                    ★ {t(lang, "recommended")}
+                                </span>
+                            )}
                             <div
                                 className="w-9 h-9 flex items-center justify-center pb-mono text-base flex-shrink-0"
                                 style={{ background: palette.bg, color: palette.text }}

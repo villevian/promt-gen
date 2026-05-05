@@ -24,6 +24,8 @@ const INITIAL_STATE = {
     aspect: null,
     aspectCustom: "",
     topic: "",
+    contextMode: "general",   // 'general' or 'custom'
+    contextCustom: "",
     prior: null,
     problem: "",
     level: null,
@@ -108,6 +110,7 @@ function App() {
             case 1: {
                 if (!state.topic.trim()) return false;
                 if (state.aspect === "custom" && !state.aspectCustom.trim()) return false;
+                if (state.contextMode === "custom" && !state.contextCustom.trim()) return false;
                 if (!state.prior) return false;
                 if (state.prior === "specific_problem" && !state.problem.trim()) return false;
                 return true;
@@ -126,6 +129,7 @@ function App() {
             if (step === 1) {
                 if (!state.topic.trim()) toast.error(t(lang, "error_topic"));
                 else if (state.aspect === "custom" && !state.aspectCustom.trim()) toast.error(t(lang, "error_aspect_custom"));
+                else if (state.contextMode === "custom" && !state.contextCustom.trim()) toast.error(t(lang, "error_context_custom"));
                 else if (state.prior === "specific_problem" && !state.problem.trim()) toast.error(t(lang, "error_problem"));
             } else if (step === 6) {
                 toast.error(t(lang, "error_activity"));
@@ -172,6 +176,7 @@ function App() {
             aspect: state.aspect,
             aspect_custom: state.aspect === "custom" ? state.aspectCustom : null,
             topic: state.topic,
+            context: state.contextMode === "custom" ? state.contextCustom : "general",
             prior_knowledge: state.prior,
             problem_description: state.prior === "specific_problem" ? state.problem : null,
             level: state.level,
@@ -249,6 +254,8 @@ function App() {
                 return <TopicStep
                     aspect={state.aspect}
                     topic={state.topic} setTopic={(v) => update({ topic: v })}
+                    contextMode={state.contextMode} setContextMode={(v) => update({ contextMode: v })}
+                    contextCustom={state.contextCustom} setContextCustom={(v) => update({ contextCustom: v })}
                     prior={state.prior} setPrior={(v) => update({ prior: v })}
                     problem={state.problem} setProblem={(v) => update({ problem: v })}
                     aspectCustom={state.aspectCustom} setAspectCustom={(v) => update({ aspectCustom: v })}
